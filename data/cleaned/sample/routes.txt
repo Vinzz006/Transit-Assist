@@ -1,0 +1,10 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+CMRL_BLUE,CMRL,Blue Line,Wimco Nagar Depot - Chennai International Airport,1,0066CC,FFFFFF
+CMRL_GREEN,CMRL,Green Line,MGR Central - St. Thomas Mount via Koyambedu,1,009933,FFFFFF
+MTC_29C,MTC,29C,Perambur B.S - Besant Nagar,3,DC2626,FFFFFF
+MTC_18A,MTC,18A,High Court - Chromepet,3,DC2626,FFFFFF
+MTC_47A,MTC,47A,Villivakkam - Adyar Depot via CMBT,3,DC2626,FFFFFF
+MTC_23C,MTC,23C,Ayanavaram B.S - Besant Nagar,3,DC2626,FFFFFF
+MTC_11G,MTC,11G,Broadway - West Mambalam,3,DC2626,FFFFFF
+SR_SOUTH,SR,Suburban South,Chennai Beach - Tambaram EMU Local,2,E65100,FFFFFF
+SR_MRTS,SR,MRTS Line,Chennai Beach - Velachery MRTS Elevated Rail,2,7B1FA2,FFFFFF

@@ -1,0 +1,129 @@
+{
+  "app_name": "Transit Assist India",
+  "app_tagline": "Chennai Public Transit Companion",
+  "nav": {
+    "plan": "Plan Trip",
+    "nearby": "Nearby Stops",
+    "routes": "Routes & Metro",
+    "saved": "Saved"
+  },
+  "search": {
+    "origin_placeholder": "Enter origin stop or landmark...",
+    "destination_placeholder": "Enter destination stop or landmark...",
+    "current_location": "Use Current Location",
+    "detecting_location": "Detecting GPS...",
+    "swap": "Swap Origin & Destination",
+    "find_routes": "Find Routes",
+    "no_stops_found": "No matching stops found",
+    "recent_searches": "Recent Searches",
+    "popular_destinations": "Popular Transit Hubs",
+    "voiceSearch": "Voice search",
+    "voiceNotSupported": "Voice speech recognition is not supported in this browser."
+  },
+  "filters": {
+    "departure_time": "Departure Time",
+    "women_fare_scheme": "Vidiyal Payanam (Women Free Travel)",
+    "low_data_mode": "Low-Data Mode",
+    "low_data_desc": "Saves mobile data, loads fast list view without map tiles",
+    "offline_notice": "Offline mode active — using cached schedules",
+    "online_status": "Online",
+    "offline_status": "Offline"
+  },
+  "results": {
+    "suggested_routes": "Suggested Transit Routes",
+    "routes_found": "{{count}} routes found",
+    "fastest": "Fastest",
+    "fewest_transfers": "Fewest Transfers",
+    "direct": "Direct Route",
+    "duration": "Duration",
+    "walking": "Walking",
+    "transit": "In Transit",
+    "transfers": "Transfers",
+    "total_fare": "Total Fare",
+    "cash": "Cash / Token",
+    "smartcard": "Smartcard / QR",
+    "women_free": "Free (Vidiyal Payanam)",
+    "women_concession": "Women",
+    "no_routes": "No transit routes found between these locations",
+    "try_different_time": "Try changing departure time or increasing search radius",
+    "loading_routes": "Finding best routes across Bus, Metro & Suburban Rail..."
+  },
+  "itinerary": {
+    "walk_to": "Walk to {{stop}}",
+    "board": "Board {{route}} towards {{headsign}}",
+    "alight_at": "Alight at {{stop}}",
+    "transfer_at": "Transfer at {{stop}}",
+    "stops_count": "{{count}} stops",
+    "intermediate_stops": "{{count}} intermediate stops",
+    "view_stops": "Show intermediate stops",
+    "hide_stops": "Hide intermediate stops",
+    "fare_details": "Fare Details",
+    "fare_label": "Fare",
+    "stage": "Stage {{stage}}",
+    "distance": "{{dist}} km"
+  },
+  "arrivals": {
+    "title": "Upcoming Departures",
+    "select_stop": "Select a stop to view live arrivals",
+    "min_away": "{{minutes}} min",
+    "due_now": "Due now",
+    "scheduled": "Scheduled",
+    "no_arrivals": "No more scheduled departures for today",
+    "loading_schedule": "Loading scheduled departures...",
+    "btn_arrivals": "Arrivals",
+    "close": "Close"
+  },
+  "routes_view": {
+    "agency": "Agency",
+    "mode": "Mode",
+    "loading": "Loading route details...",
+    "towards": "Towards {{headsign}}"
+  },
+  "safety": {
+    "title": "Commuter Safety & Trip Sharing",
+    "shareTripTitle": "Share Trip Status with Family",
+    "shareWhatsapp": "WhatsApp",
+    "shareDirect": "Share...",
+    "copied": "Copied!",
+    "copyText": "Copy",
+    "helplinesTitle": "Chennai Emergency SOS Helplines",
+    "police": "Chennai City Police",
+    "policeDesc": "Immediate emergency response & PCR",
+    "womenHelpline": "TN Women Safety Helpline",
+    "womenDesc": "24x7 distress helpline for women",
+    "cmrlHelpline": "CMRL Metro Helpline",
+    "cmrlDesc": "Metro station security & passenger assistance",
+    "mtcHelpline": "MTC Bus Control Room",
+    "mtcDesc": "Bus schedules, feedback & safety control",
+    "ambulance": "Medical Emergency (Ambulance)",
+    "ambulanceDesc": "Free 24x7 emergency medical service"
+  },
+  "report": {
+    "title": "Report Crowding & Delays",
+    "reportingFor": "Reporting line:",
+    "crowdLevelLabel": "Current Crowding Level:",
+    "crowdLow": "Seats Available",
+    "crowdModerate": "Standing Room Only",
+    "crowdPacked": "Heavily Crowded",
+    "delayLabel": "Service Delay (Minutes):",
+    "onTime": "On Time",
+    "commentLabel": "Additional details (optional):",
+    "commentPlaceholder": "e.g., Heavy rush at Central platform",
+    "submitting": "Submitting...",
+    "submitBtn": "Submit Report",
+    "reportBtn": "Report Crowd",
+    "thankYou": "Thank you for reporting!",
+    "successMsg": "Your feedback helps fellow Chennai commuters plan their journey."
+  },
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close"
+  },
+  "modes": {
+    "bus": "MTC Bus",
+    "metro": "CMRL Metro",
+    "suburban": "Suburban Rail",
+    "mrts": "MRTS Rail",
+    "walk": "Walk"
+  }
+}

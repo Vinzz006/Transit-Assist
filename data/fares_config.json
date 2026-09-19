@@ -1,0 +1,81 @@
+{
+  "city": "Chennai",
+  "currency": "INR",
+  "currency_symbol": "₹",
+  "agencies": {
+    "MTC": {
+      "name": "Metropolitan Transport Corporation (MTC)",
+      "mode": "bus",
+      "pricing_model": "stage_based",
+      "stage_distance_km": 2.0,
+      "services": {
+        "ordinary": {
+          "name": "Ordinary (White Board)",
+          "min_fare": 5.0,
+          "stages": [
+            {"stage": 1, "fare": 5.0},
+            {"stage": 2, "fare": 6.0},
+            {"stage": 3, "fare": 7.0},
+            {"stage": 4, "fare": 8.0},
+            {"stage": 5, "fare": 9.0},
+            {"stage": 6, "fare": 10.0},
+            {"stage": 7, "fare": 11.0},
+            {"stage": 8, "fare": 12.0},
+            {"stage": 9, "fare": 13.0},
+            {"stage": 10, "fare": 14.0},
+            {"stage": 15, "fare": 18.0},
+            {"stage": 20, "fare": 20.0},
+            {"stage": 28, "fare": 23.0}
+          ],
+          "concessions": {
+            "women_free": true,
+            "scheme_name": "Vidiyal Payanam"
+          }
+        },
+        "express": {
+          "name": "Express (Green Board)",
+          "multiplier": 1.5,
+          "addon": 0.5,
+          "concessions": {
+            "women_free": false
+          }
+        },
+        "deluxe": {
+          "name": "Deluxe (Blue / LED)",
+          "multiplier": 2.0,
+          "addon": 1.0,
+          "concessions": {
+            "women_free": false
+          }
+        }
+      }
+    },
+    "CMRL": {
+      "name": "Chennai Metro Rail Limited (CMRL)",
+      "mode": "metro",
+      "pricing_model": "distance_slab",
+      "slabs": [
+        {"min_km": 0.0, "max_km": 2.0, "token_fare": 10.0, "card_discount_pct": 20.0},
+        {"min_km": 2.0, "max_km": 4.0, "token_fare": 20.0, "card_discount_pct": 20.0},
+        {"min_km": 4.0, "max_km": 6.0, "token_fare": 30.0, "card_discount_pct": 20.0},
+        {"min_km": 6.0, "max_km": 9.0, "token_fare": 40.0, "card_discount_pct": 20.0},
+        {"min_km": 9.0, "max_km": 999.0, "token_fare": 50.0, "card_discount_pct": 20.0}
+      ],
+      "smartcard_discount_pct": 20.0,
+      "qr_discount_pct": 20.0
+    },
+    "SR": {
+      "name": "Southern Railway Chennai Suburban (SR)",
+      "mode": "suburban_rail",
+      "pricing_model": "distance_slab",
+      "slabs": [
+        {"min_km": 0.0, "max_km": 20.0, "token_fare": 5.0, "card_discount_pct": 3.0},
+        {"min_km": 20.0, "max_km": 45.0, "token_fare": 10.0, "card_discount_pct": 3.0},
+        {"min_km": 45.0, "max_km": 70.0, "token_fare": 15.0, "card_discount_pct": 3.0},
+        {"min_km": 70.0, "max_km": 999.0, "token_fare": 20.0, "card_discount_pct": 3.0}
+      ],
+      "smartcard_discount_pct": 3.0,
+      "qr_discount_pct": 3.0
+    }
+  }
+}

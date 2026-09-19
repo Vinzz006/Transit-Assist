@@ -1,0 +1,32 @@
+stop_id,stop_code,stop_name,stop_desc,stop_lat,stop_lon,zone_id,stop_url,location_type
+ST_CENTRAL,MAS,Chennai Central (சென்னை சென்ட்ரல்),Puratchi Thalaivar Dr. MGR Central Hub,13.0827,80.2754,ZONE_1,https://chennaimetrorail.org,0
+ST_EGMORE,MS,Chennai Egmore (சென்னை எழும்பூர்),Egmore Railway & Metro Station,13.0780,80.2610,ZONE_1,https://chennaimetrorail.org,0
+ST_NEHRU_PARK,NPK,Nehru Park (நேரு பூங்கா),Poonamallee High Road,13.0790,80.2510,ZONE_1,https://chennaimetrorail.org,0
+ST_KILPAUK,KPK,Kilpauk (கீழ்ப்பாக்கம்),Kilpauk Medical College,13.0780,80.2410,ZONE_1,https://chennaimetrorail.org,0
+ST_SHENOY_NAGAR,SNN,Shenoy Nagar (ஷெனாய் நகர்),Thiru Vi Ka Park,13.0770,80.2280,ZONE_1,https://chennaimetrorail.org,0
+ST_ANNA_NAGAR_E,ANE,Anna Nagar East (அண்ணா நகர் கிழக்கு),Roundtana,13.0840,80.2190,ZONE_1,https://chennaimetrorail.org,0
+ST_TIRUMANGALAM,TMG,Tirumangalam (திருமங்கலம்),Junction 100ft Road,13.0850,80.1990,ZONE_1,https://chennaimetrorail.org,0
+ST_CMBT,CMBT,Koyambedu CMBT (கோயம்பேடு),Chennai Mofussil Bus Terminus,13.0690,80.1940,ZONE_1,https://chennaimetrorail.org,0
+ST_GOVT_ESTATE,GVE,Government Estate (அரசு எஸ்டேட்),Omandurar Government Estate,13.0694,80.2721,ZONE_1,https://chennaimetrorail.org,0
+ST_LIC,LIC,LIC (எல்.ஐ.சி),Anna Salai LIC Building,13.0625,80.2662,ZONE_1,https://chennaimetrorail.org,0
+ST_1000_LIGHTS,TLS,Thousand Lights (ஆயிரம் விளக்கு),Anna Salai Thousand Lights,13.0560,80.2520,ZONE_1,https://chennaimetrorail.org,0
+ST_AG_DMS,DMS,AG-DMS (ஏ.ஜி - டி.எம்.எஸ்),DMS Campus Anna Salai,13.0450,80.2480,ZONE_1,https://chennaimetrorail.org,0
+ST_TEYNAMPET,TYP,Teynampet (தேனாம்பேட்டை),Eldams Road Junction,13.0390,80.2460,ZONE_1,https://chennaimetrorail.org,0
+ST_NANDANAM,NDM,Nandanam (நந்தனம்),Chamiers Road Junction,13.0310,80.2410,ZONE_1,https://chennaimetrorail.org,0
+ST_SAIDAPET,SDP,Saidapet (சைதாப்பேட்டை),Saidapet Court Anna Salai,13.0230,80.2280,ZONE_1,https://chennaimetrorail.org,0
+ST_GUINDY,GDY,Guindy (கிண்டி),Guindy Industrial Estate / Station,13.0090,80.2130,ZONE_1,https://chennaimetrorail.org,0
+ST_AIRPORT,MAA,Chennai Airport (விமான நிலையம்),Chennai International Airport,12.9780,80.1640,ZONE_1,https://chennaimetrorail.org,0
+ST_TNAGAR,TNG,T. Nagar (தியாகராய நகர்),Panagal Park South Usman Road,13.0402,80.2337,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_ADYAR,ADY,Adyar Depot (அடையாறு பணிமனை),L.B. Road Adyar,12.9978,80.2562,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_BESANT_NAGAR,BSN,Besant Nagar (பெசன்ட் நகர்),Elliot Beach Bus Terminus,12.9990,80.2710,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_MARINA,MRN,Marina Beach Anna Square (மெரினா அண்ணா சதுக்கம்),Kamarajar Salai Marina,13.0630,80.2830,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_PERAMBUR,PRB,Perambur (பெரம்பூர்),Perambur Bus Stand & Railway Station,13.1110,80.2430,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_HIGH_COURT,HCT,High Court (உயர் நீதிமன்றம்),Parrys Corner High Court,13.0880,80.2880,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_VADAPALANI,VDP,Vadapalani (வடபழனி),100ft Road Vadapalani Junction,13.0520,80.2120,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_VELACHERY,VLC,Velachery (வேளச்சேரி),Vijayanagar Velachery Bus Stand,12.9750,80.2210,ZONE_1,https://mtcbus.tn.gov.in,0
+ST_FORT,MSF,Chennai Fort (சென்னை கோட்டை),Fort Suburban Station,13.0830,80.2830,ZONE_1,https://sr.indianrailways.gov.in,0
+ST_MAMBALAM,MBM,Mambalam (மாம்பலம்),Mambalam Railway Station T. Nagar,13.0360,80.2295,ZONE_1,https://sr.indianrailways.gov.in,0
+ST_TAMBARAM,TBM,Tambaram (தாம்பரம்),Tambaram Railway Terminus,12.9249,80.1200,ZONE_1,https://sr.indianrailways.gov.in,0
+ST_GUINDY_SUB,GDYS,Guindy Suburban (கிண்டி புறநகர்),Guindy Railway Station Interchange,13.0085,80.2135,ZONE_1,https://sr.indianrailways.gov.in,0
+ST_CHEPAUK,MCPK,Chepauk MRTS (சேப்பாக்கம்),Chepauk Stadium MRTS,13.0645,80.2815,ZONE_1,https://sr.indianrailways.gov.in,0
+ST_KASTURBA_NAGAR,KTBR,Kasturba Nagar MRTS (கஸ்தூரிபா நகர்),Adyar Kasturba Nagar MRTS Station,13.0065,80.2520,ZONE_1,https://sr.indianrailways.gov.in,0
