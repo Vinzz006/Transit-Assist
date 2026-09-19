@@ -43,12 +43,24 @@
     "cash": "Cash / Token",
     "smartcard": "Smartcard / QR",
     "women_free": "Free (Vidiyal Payanam)",
-    "women_concession": "Women",
+    "least_walking": "Least Walking",
+    "cheapest": "Cheapest",
     "no_routes": "No transit routes found between these locations",
     "try_different_time": "Try changing departure time or increasing search radius",
     "loading_routes": "Finding best routes across Bus, Metro & Suburban Rail..."
   },
+  "preferences": {
+    "title": "Preference",
+    "fastest": "Fastest",
+    "fewest_transfers": "Fewest Transfers",
+    "least_walking": "Least Walking",
+    "cheapest": "Cheapest"
+  },
   "itinerary": {
+    "timeline_title": "Step-by-Step Directions",
+    "auto_meter_estimate": "TN Govt Meter (Est)",
+    "auto_leg": "Auto Feeder",
+    "estimated_badge": "Estimated Leg",
     "walk_to": "Walk to {{stop}}",
     "board": "Board {{route}} towards {{headsign}}",
     "alight_at": "Alight at {{stop}}",

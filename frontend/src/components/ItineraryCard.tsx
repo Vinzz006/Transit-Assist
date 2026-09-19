@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Footprints, ChevronDown, ChevronUp, Bus, Train, Share2, Users } from "lucide-react";
+import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users } from "lucide-react";
 import type { Itinerary, TransitLeg } from "../types";
 
 interface ItineraryCardProps {
@@ -20,17 +20,19 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
   onShareTrip,
   onReportCrowd,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showStopsIndex, setShowStopsIndex] = useState<number | null>(null);
 
   const getModeIcon = (mode: string) => {
+    if (mode === "AUTO" || mode === "TAXI") return <Car size={14} />;
     if (mode === "METRO" || mode === "SUBURBAN_RAIL" || mode === "RAIL") return <Train size={14} />;
     if (mode === "BUS") return <Bus size={14} />;
     return <Footprints size={14} />;
   };
 
   const getBadgeClass = (leg: TransitLeg) => {
+    if (leg.mode === "AUTO" || leg.mode === "TAXI") return "badge-leg badge-auto";
     if (leg.mode === "SUBURBAN_RAIL" || leg.mode === "RAIL" || leg.route_id?.startsWith("SR")) {
       return leg.route_id?.includes("MRTS") ? "badge-leg badge-mrts" : "badge-leg badge-suburban";
     }
@@ -103,6 +105,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
         }}
       >
         <span>
+          {itinerary.auto_time_minutes ? `${itinerary.auto_time_minutes}m auto • ` : ""}
           {itinerary.walking_time_minutes}m walk &bull; {itinerary.transit_time_minutes}m transit
         </span>
         <button
@@ -123,7 +126,9 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
                   className="step-circle"
                   style={{
                     backgroundColor:
-                      leg.mode === "METRO"
+                      leg.mode === "AUTO" || leg.mode === "TAXI"
+                        ? "var(--accent-amber)"
+                        : leg.mode === "METRO"
                         ? leg.route_id?.includes("GREEN")
                           ? "var(--metro-green)"
                           : "var(--metro-blue)"
@@ -138,12 +143,33 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
               </div>
               <div className="step-content">
                 <div className="step-title">
-                  {leg.leg_type === "WALK"
+                  {i18n.language === "ta" && leg.instruction_ta
+                    ? leg.instruction_ta
+                    : leg.instruction
+                    ? leg.instruction
+                    : leg.leg_type === "WALK"
                     ? t("itinerary.walk_to", { stop: leg.to_stop_name })
                     : t("itinerary.board", {
                         route: leg.route_short_name,
                         headsign: leg.headsign || leg.to_stop_name,
                       })}
+                  {leg.is_estimated && (
+                    <span
+                      style={{
+                        marginLeft: "6px",
+                        fontSize: "10px",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        backgroundColor: "rgba(245, 158, 11, 0.2)",
+                        color: "#f59e0b",
+                        border: "1px solid rgba(245, 158, 11, 0.4)",
+                        fontWeight: 600,
+                        display: "inline-block",
+                      }}
+                    >
+                      {t("itinerary.estimated_badge", "Estimated Leg")}
+                    </span>
+                  )}
                 </div>
                 <div className="step-subtext">
                   {leg.departure_time.slice(0, 5)} - {leg.arrival_time.slice(0, 5)} &bull; {leg.duration_minutes} min ({leg.distance_meters > 1000 ? (leg.distance_meters / 1000).toFixed(1) + " km" : Math.round(leg.distance_meters) + " m"})

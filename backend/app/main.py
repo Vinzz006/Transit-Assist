@@ -66,6 +66,17 @@ def health_check(db: Session = Depends(get_db)):
         "total_routes": routes_count,
     }
 
+@app.get("/api/config/features", tags=["Configuration"])
+def get_features():
+    """Return active feature flags and city configuration."""
+    from backend.app.config import settings
+    return {
+        "app_name": settings.app_name,
+        "city": settings.city,
+        "version": settings.version,
+        "features": settings.get_feature_flags(),
+    }
+
 @app.get("/", tags=["Root"])
 def root():
     return {

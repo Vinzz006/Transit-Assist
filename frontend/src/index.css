@@ -425,6 +425,12 @@ body {
   border: 1px dashed var(--border-color);
 }
 
+.badge-auto {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
 .leg-arrow {
   color: var(--text-muted);
   font-size: 0.75rem;

@@ -35,6 +35,7 @@ export const App: React.FC = () => {
 
   const [isFemalePref, setIsFemalePref] = useState(prefs.isFemale);
   const [lowDataMode, setLowDataMode] = useState(prefs.lowDataMode);
+  const [currentPreference, setCurrentPreference] = useState<"fastest" | "fewest_transfers" | "least_walking" | "cheapest">("fastest");
 
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
   const [selectedItinIndex, setSelectedItinIndex] = useState<number>(0);
@@ -63,6 +64,7 @@ export const App: React.FC = () => {
       origin: { lat: 13.0827, lon: 80.2754, name: "Chennai Central" },
       destination: { lat: 12.9780, lon: 80.1640, name: "Chennai Airport" },
       isFemale: prefs.isFemale,
+      preference: "fastest",
     });
   }, []);
 
@@ -70,7 +72,10 @@ export const App: React.FC = () => {
     origin: { lat: number; lon: number; name: string };
     destination: { lat: number; lon: number; name: string };
     isFemale: boolean;
+    preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
   }) => {
+    const pref = params.preference || currentPreference;
+    setCurrentPreference(pref);
     setLoading(true);
     setOrigin(params.origin);
     setDestination(params.destination);
@@ -83,6 +88,8 @@ export const App: React.FC = () => {
         destination_lat: params.destination.lat,
         destination_lon: params.destination.lon,
         is_female: params.isFemale,
+        preference: pref,
+        allow_auto: true,
       })
       .then((res: TripPlanResponse) => {
         setItineraries(res.itineraries);
@@ -179,6 +186,15 @@ export const App: React.FC = () => {
                 onToggleFemale={(val) => {
                   setIsFemalePref(val);
                   cache.setPrefs({ isFemale: val });
+                }}
+                currentPreference={currentPreference}
+                onPreferenceChange={(p) => {
+                  handlePlanJourney({
+                    origin,
+                    destination,
+                    isFemale: isFemalePref,
+                    preference: p,
+                  });
                 }}
               />
 

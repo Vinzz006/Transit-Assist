@@ -62,8 +62,8 @@ export interface TotalFare {
 }
 
 export interface TransitLeg {
-  leg_type: "WALK" | "TRANSIT";
-  mode: "WALK" | "BUS" | "METRO" | "SUBURBAN_RAIL" | "RAIL";
+  leg_type: "WALK" | "TRANSIT" | "AUTO" | "TAXI";
+  mode: "WALK" | "BUS" | "METRO" | "SUBURBAN_RAIL" | "RAIL" | "AUTO" | "TAXI";
   route_id?: string;
   route_short_name?: string;
   route_long_name?: string;
@@ -86,6 +86,9 @@ export interface TransitLeg {
   intermediate_stops: StopBase[];
   polyline: [number, number][]; // [lat, lon]
   fare?: FareBreakdown;
+  instruction?: string;
+  instruction_ta?: string;
+  is_estimated?: boolean;
 }
 
 export interface Itinerary {
@@ -95,9 +98,11 @@ export interface Itinerary {
   duration_minutes: number;
   walking_time_minutes: number;
   transit_time_minutes: number;
+  auto_time_minutes?: number;
   transfers_count: number;
   legs: TransitLeg[];
   fare: TotalFare;
+  preference_applied?: string;
 }
 
 export interface TripPlanRequest {
@@ -109,6 +114,8 @@ export interface TripPlanRequest {
   is_female?: boolean;
   max_transfers?: number;
   walk_speed_mps?: number;
+  preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
+  allow_auto?: boolean;
 }
 
 export interface TripPlanResponse {

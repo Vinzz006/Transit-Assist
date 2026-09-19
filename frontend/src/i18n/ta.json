@@ -43,12 +43,24 @@
     "cash": "ரொக்கம் / டோக்கன்",
     "smartcard": "ஸ்மார்ட் கார்டு / QR",
     "women_free": "இலவசம் (விடியல் பயணம்)",
-    "women_concession": "மகளிர்",
+    "least_walking": "குறைந்த நடைபயணம்",
+    "cheapest": "மலிவானது",
     "no_routes": "இந்த இடங்களுக்கிடையே வழித்தடங்கள் இல்லை",
     "try_different_time": "புறப்படும் நேரத்தை மாற்றி முயலவும்",
     "loading_routes": "பேருந்து, மெட்ரோ & புறநகர் ரயில்களில் வழிகள் தேடப்படுகின்றன..."
   },
+  "preferences": {
+    "title": "விருப்பம்",
+    "fastest": "மிக விரைவானது",
+    "fewest_transfers": "குறைந்தபட்ச மாற்றங்கள்",
+    "least_walking": "குறைந்த நடைபயணம்",
+    "cheapest": "மலிவானது"
+  },
   "itinerary": {
+    "timeline_title": "படிப்படியான வழிமுறை",
+    "auto_meter_estimate": "TN அரசு மீட்டர் (மதிப்பீடு)",
+    "auto_leg": "ஆட்டோ இணைப்பு",
+    "estimated_badge": "மதிப்பீட்டு இணைப்பு",
     "walk_to": "{{stop}} நோக்கி நடக்கவும்",
     "board": "{{headsign}} நோக்கி செல்லும் {{route}} இல் ஏறவும்",
     "alight_at": "{{stop}} இல் இறங்கவும்",

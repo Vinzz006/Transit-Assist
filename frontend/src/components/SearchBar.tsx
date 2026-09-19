@@ -9,17 +9,23 @@ interface SearchBarProps {
     origin: { lat: number; lon: number; name: string };
     destination: { lat: number; lon: number; name: string };
     isFemale: boolean;
+    preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
   }) => void;
   isFemalePref: boolean;
   onToggleFemale: (val: boolean) => void;
+  currentPreference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
+  onPreferenceChange?: (pref: "fastest" | "fewest_transfers" | "least_walking" | "cheapest") => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
   onSearch,
   isFemalePref,
   onToggleFemale,
+  currentPreference = "fastest",
+  onPreferenceChange,
 }) => {
   const { t, i18n } = useTranslation();
+  const [preference, setPreference] = useState<"fastest" | "fewest_transfers" | "least_walking" | "cheapest">(currentPreference);
 
   const [originText, setOriginText] = useState("Chennai Central");
   const [originCoord, setOriginCoord] = useState<{ lat: number; lon: number; name: string } | null>({
@@ -165,6 +171,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       origin: originCoord,
       destination: destCoord,
       isFemale: isFemalePref,
+      preference,
     });
   };
 
@@ -305,6 +312,39 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           />
           <span className="slider"></span>
         </label>
+      </div>
+
+      {/* Route Preference Selector */}
+      <div className="preference-section" style={{ margin: "10px 0 14px 0" }}>
+        <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", fontWeight: 600 }}>
+          {t("preferences.title", "Route Preference")}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
+          {(["fastest", "fewest_transfers", "least_walking", "cheapest"] as const).map((pref) => (
+            <button
+              key={pref}
+              type="button"
+              className={`chip ${preference === pref ? "active" : ""}`}
+              style={{
+                fontSize: "11px",
+                padding: "6px 2px",
+                textAlign: "center",
+                borderRadius: "var(--radius-sm)",
+                border: preference === pref ? "1px solid var(--accent-blue)" : "1px solid var(--border-color)",
+                backgroundColor: preference === pref ? "rgba(0, 102, 204, 0.15)" : "var(--bg-card)",
+                color: preference === pref ? "var(--accent-blue)" : "var(--text-secondary)",
+                cursor: "pointer",
+                fontWeight: preference === pref ? 600 : 400,
+              }}
+              onClick={() => {
+                setPreference(pref);
+                if (onPreferenceChange) onPreferenceChange(pref);
+              }}
+            >
+              {t(`preferences.${pref}`)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Submit Button */}

@@ -9,6 +9,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple, Any
 
+from backend.app.config import settings
 from backend.app.db.database import SessionLocal
 from backend.app.db.models import Stop, Route, Trip, StopTime, ShapePoint
 from backend.app.routing.base import BaseTransitRouter
@@ -226,9 +227,11 @@ class RaptorRouter(BaseTransitRouter):
             # Add direct walk itinerary
             walk_dur_sec = int(math.ceil(direct_walk_m / walk_speed))
             arr_sec = dep_sec + walk_dur_sec
+            w_min = max(1, int(math.ceil(walk_dur_sec / 60.0)))
             direct_leg = TransitLeg(
                 leg_type="WALK",
                 mode="WALK",
+                route_short_name="Walk",
                 from_stop_id="ORIGIN",
                 from_stop_name="Origin Location",
                 from_stop_lat=request.origin_lat,
@@ -239,20 +242,24 @@ class RaptorRouter(BaseTransitRouter):
                 to_stop_lon=request.destination_lon,
                 departure_time=format_seconds_to_time(dep_sec),
                 arrival_time=format_seconds_to_time(arr_sec),
-                duration_minutes=int(math.ceil(walk_dur_sec / 60.0)),
+                duration_minutes=w_min,
                 distance_meters=round(direct_walk_m, 1),
                 intermediate_stops_count=0,
                 intermediate_stops=[],
                 polyline=[[request.origin_lat, request.origin_lon], [request.destination_lat, request.destination_lon]],
                 fare=None,
+                instruction=f"Walk {int(round(direct_walk_m))}m directly to Destination (~{w_min} mins)",
+                instruction_ta=f"இலக்கு வரை {int(round(direct_walk_m))} மீ நேராக நடந்து செல்லவும் (~{w_min} நிமி)",
+                is_estimated=False,
             )
             itineraries.append(Itinerary(
                 itinerary_id="ITIN_DIRECT_WALK",
                 departure_time=format_seconds_to_time(dep_sec),
                 arrival_time=format_seconds_to_time(arr_sec),
-                duration_minutes=int(math.ceil(walk_dur_sec / 60.0)),
-                walking_time_minutes=int(math.ceil(walk_dur_sec / 60.0)),
+                duration_minutes=w_min,
+                walking_time_minutes=w_min,
                 transit_time_minutes=0,
+                auto_time_minutes=0,
                 transfers_count=0,
                 legs=[direct_leg],
                 fare=TotalFare(
@@ -263,6 +270,61 @@ class RaptorRouter(BaseTransitRouter):
                     currency_symbol="₹",
                     breakdown=[],
                 ),
+                preference_applied=request.preference,
+            ))
+
+        # Direct Auto option (benchmark / estimated leg, included for least_walking or long walks)
+        if direct_walk_m >= 800.0 and settings.enable_auto_taxi_legs and request.allow_auto and request.preference == "least_walking":
+            auto_speed_mps = 22.0 * 1000.0 / 3600.0  # 22 km/h Chennai traffic
+            auto_dur_sec = max(180, int(math.ceil(direct_walk_m / auto_speed_mps)))
+            auto_arr_sec = dep_sec + auto_dur_sec
+            auto_min = max(3, int(math.ceil(auto_dur_sec / 60.0)))
+            auto_fare = fare_calculator.calculate_auto_fare(
+                direct_walk_m, format_seconds_to_time(dep_sec), mode="auto"
+            )
+            direct_auto_leg = TransitLeg(
+                leg_type="AUTO",
+                mode="AUTO",
+                route_short_name="Auto",
+                from_stop_id="ORIGIN",
+                from_stop_name="Origin Location",
+                from_stop_lat=request.origin_lat,
+                from_stop_lon=request.origin_lon,
+                to_stop_id="DESTINATION",
+                to_stop_name="Destination Location",
+                to_stop_lat=request.destination_lat,
+                to_stop_lon=request.destination_lon,
+                departure_time=format_seconds_to_time(dep_sec),
+                arrival_time=format_seconds_to_time(auto_arr_sec),
+                duration_minutes=auto_min,
+                distance_meters=round(direct_walk_m, 1),
+                intermediate_stops_count=0,
+                intermediate_stops=[],
+                polyline=[[request.origin_lat, request.origin_lon], [request.destination_lat, request.destination_lon]],
+                fare=auto_fare,
+                instruction=f"Take Auto-rickshaw directly to Destination (~{auto_min} mins, ₹{auto_fare.fare_amount} TN Govt meter estimate)",
+                instruction_ta=f"இலக்கு வரை ஆட்டோ ரிக்ஷாவில் செல்லவும் (~{auto_min} நிமி, ₹{auto_fare.fare_amount} தமிழ்நாடு அரசு மீட்டர் கட்டணம்)",
+                is_estimated=True,
+            )
+            itineraries.append(Itinerary(
+                itinerary_id="ITIN_DIRECT_AUTO",
+                departure_time=format_seconds_to_time(dep_sec),
+                arrival_time=format_seconds_to_time(auto_arr_sec),
+                duration_minutes=auto_min,
+                walking_time_minutes=0,
+                transit_time_minutes=0,
+                auto_time_minutes=auto_min,
+                transfers_count=0,
+                legs=[direct_auto_leg],
+                fare=TotalFare(
+                    cash_total=auto_fare.fare_amount,
+                    smartcard_total=auto_fare.fare_amount,
+                    women_fare_total=auto_fare.fare_amount,
+                    currency="INR",
+                    currency_symbol="₹",
+                    breakdown=[auto_fare],
+                ),
+                preference_applied=request.preference,
             ))
 
         # 2. Identify Access Stops (Origin -> Nearby Stops)
@@ -272,6 +334,19 @@ class RaptorRouter(BaseTransitRouter):
             if d <= max_access_walk_dist:
                 origin_stops[s.stop_id] = (d, int(math.ceil(d / walk_speed)))
 
+        # If no stops within walking distance, check auto feeder access (up to 4.5 km)
+        if not origin_stops and settings.enable_auto_taxi_legs and request.allow_auto:
+            auto_speed_mps = 22.0 * 1000.0 / 3600.0
+            closest_origin = sorted(
+                [(s, haversine_distance(request.origin_lat, request.origin_lon, s.stop_lat, s.stop_lon))
+                 for s in self.graph.stops.values()],
+                key=lambda x: x[1]
+            )[:4]
+            for s, d in closest_origin:
+                if d <= 4500.0:
+                    auto_sec = max(120, int(math.ceil(d / auto_speed_mps)))
+                    origin_stops[s.stop_id] = (d, auto_sec)
+
         # 3. Identify Egress Stops (Nearby Stops -> Destination)
         dest_stops: Dict[str, Tuple[float, int]] = {}  # stop_id -> (dist_m, walk_sec)
         for s in self.graph.stops.values():
@@ -279,8 +354,21 @@ class RaptorRouter(BaseTransitRouter):
             if d <= max_access_walk_dist:
                 dest_stops[s.stop_id] = (d, int(math.ceil(d / walk_speed)))
 
+        # If no egress stops within walking distance, check auto feeder egress (up to 4.5 km)
+        if not dest_stops and settings.enable_auto_taxi_legs and request.allow_auto:
+            auto_speed_mps = 22.0 * 1000.0 / 3600.0
+            closest_dest = sorted(
+                [(s, haversine_distance(s.stop_lat, s.stop_lon, request.destination_lat, request.destination_lon))
+                 for s in self.graph.stops.values()],
+                key=lambda x: x[1]
+            )[:4]
+            for s, d in closest_dest:
+                if d <= 4500.0:
+                    auto_sec = max(120, int(math.ceil(d / auto_speed_mps)))
+                    dest_stops[s.stop_id] = (d, auto_sec)
+
         if not origin_stops or not dest_stops:
-            # Fallback if no stops within walking distance
+            # Return direct options if no transit path available
             return TripPlanResponse(
                 origin={"lat": request.origin_lat, "lon": request.origin_lon},
                 destination={"lat": request.destination_lat, "lon": request.destination_lon},
@@ -415,9 +503,11 @@ class RaptorRouter(BaseTransitRouter):
             alight_sec = tau[final_k][last_stop_id]
 
             if e_dist > 5.0:  # Only add walk leg if > 5 meters
+                e_min = max(1, int(math.ceil(e_walk / 60.0)))
                 legs.append(TransitLeg(
                     leg_type="WALK",
                     mode="WALK",
+                    route_short_name="Walk",
                     from_stop_id=last_stop_id,
                     from_stop_name=last_stop_data.stop_name,
                     from_stop_lat=last_stop_data.stop_lat,
@@ -428,11 +518,14 @@ class RaptorRouter(BaseTransitRouter):
                     to_stop_lon=request.destination_lon,
                     departure_time=format_seconds_to_time(alight_sec),
                     arrival_time=format_seconds_to_time(alight_sec + e_walk),
-                    duration_minutes=max(1, int(math.ceil(e_walk / 60.0))),
+                    duration_minutes=e_min,
                     distance_meters=round(e_dist, 1),
                     polyline=[[last_stop_data.stop_lat, last_stop_data.stop_lon],
                               [request.destination_lat, request.destination_lon]],
                     fare=None,
+                    instruction=f"Walk {int(round(e_dist))}m to Destination (~{e_min} mins)",
+                    instruction_ta=f"இலக்கு வரை {int(round(e_dist))} மீ நடந்து செல்லவும் (~{e_min} நிமி)",
+                    is_estimated=False,
                 ))
 
             # B. Trace back transit and walking legs
@@ -452,24 +545,55 @@ class RaptorRouter(BaseTransitRouter):
                     dist_m, walk_sec = record[1], record[2]
                     s_data = self.graph.stops[curr_stop]
                     if dist_m > 5.0:
-                        legs.append(TransitLeg(
-                            leg_type="WALK",
-                            mode="WALK",
-                            from_stop_id="ORIGIN",
-                            from_stop_name="Origin Location",
-                            from_stop_lat=request.origin_lat,
-                            from_stop_lon=request.origin_lon,
-                            to_stop_id=curr_stop,
-                            to_stop_name=s_data.stop_name,
-                            to_stop_lat=s_data.stop_lat,
-                            to_stop_lon=s_data.stop_lon,
-                            departure_time=format_seconds_to_time(dep_sec),
-                            arrival_time=format_seconds_to_time(dep_sec + walk_sec),
-                            duration_minutes=max(1, int(math.ceil(walk_sec / 60.0))),
-                            distance_meters=round(dist_m, 1),
-                            polyline=[[request.origin_lat, request.origin_lon], [s_data.stop_lat, s_data.stop_lon]],
-                            fare=None,
-                        ))
+                        w_min = max(1, int(math.ceil(walk_sec / 60.0)))
+                        is_auto_feeder = dist_m > max_access_walk_dist and settings.enable_auto_taxi_legs
+                        if is_auto_feeder:
+                            auto_fare = fare_calculator.calculate_auto_fare(dist_m, format_seconds_to_time(dep_sec), mode="auto")
+                            legs.append(TransitLeg(
+                                leg_type="AUTO",
+                                mode="AUTO",
+                                route_short_name="Auto",
+                                from_stop_id="ORIGIN",
+                                from_stop_name="Origin Location",
+                                from_stop_lat=request.origin_lat,
+                                from_stop_lon=request.origin_lon,
+                                to_stop_id=curr_stop,
+                                to_stop_name=s_data.stop_name,
+                                to_stop_lat=s_data.stop_lat,
+                                to_stop_lon=s_data.stop_lon,
+                                departure_time=format_seconds_to_time(dep_sec),
+                                arrival_time=format_seconds_to_time(dep_sec + walk_sec),
+                                duration_minutes=w_min,
+                                distance_meters=round(dist_m, 1),
+                                polyline=[[request.origin_lat, request.origin_lon], [s_data.stop_lat, s_data.stop_lon]],
+                                fare=auto_fare,
+                                instruction=f"Take Auto-rickshaw to {s_data.stop_name} (~{w_min} mins, ₹{auto_fare.fare_amount} meter estimate)",
+                                instruction_ta=f"{s_data.stop_name} வரை ஆட்டோவில் செல்லவும் (~{w_min} நிமி, ₹{auto_fare.fare_amount} மீட்டர் கட்டணம்)",
+                                is_estimated=True,
+                            ))
+                        else:
+                            legs.append(TransitLeg(
+                                leg_type="WALK",
+                                mode="WALK",
+                                route_short_name="Walk",
+                                from_stop_id="ORIGIN",
+                                from_stop_name="Origin Location",
+                                from_stop_lat=request.origin_lat,
+                                from_stop_lon=request.origin_lon,
+                                to_stop_id=curr_stop,
+                                to_stop_name=s_data.stop_name,
+                                to_stop_lat=s_data.stop_lat,
+                                to_stop_lon=s_data.stop_lon,
+                                departure_time=format_seconds_to_time(dep_sec),
+                                arrival_time=format_seconds_to_time(dep_sec + walk_sec),
+                                duration_minutes=w_min,
+                                distance_meters=round(dist_m, 1),
+                                polyline=[[request.origin_lat, request.origin_lon], [s_data.stop_lat, s_data.stop_lon]],
+                                fare=None,
+                                instruction=f"Walk {int(round(dist_m))}m to {s_data.stop_name} (~{w_min} mins)",
+                                instruction_ta=f"{s_data.stop_name} வரை {int(round(dist_m))} மீ நடந்து செல்லவும் (~{w_min} நிமி)",
+                                is_estimated=False,
+                            ))
                     break
 
                 elif rec_type == "FOOTPATH":
@@ -479,10 +603,12 @@ class RaptorRouter(BaseTransitRouter):
                     s2 = self.graph.stops[curr_stop]
                     transfer_arr = tau[curr_k][curr_stop]
                     transfer_dep = transfer_arr - walk_sec
+                    w_min = max(1, int(math.ceil(walk_sec / 60.0)))
 
                     legs.append(TransitLeg(
                         leg_type="WALK",
                         mode="WALK",
+                        route_short_name="Walk",
                         from_stop_id=from_s,
                         from_stop_name=s1.stop_name,
                         from_stop_lat=s1.stop_lat,
@@ -493,10 +619,13 @@ class RaptorRouter(BaseTransitRouter):
                         to_stop_lon=s2.stop_lon,
                         departure_time=format_seconds_to_time(transfer_dep),
                         arrival_time=format_seconds_to_time(transfer_arr),
-                        duration_minutes=max(1, int(math.ceil(walk_sec / 60.0))),
+                        duration_minutes=w_min,
                         distance_meters=round(dist_m, 1),
                         polyline=[[s1.stop_lat, s1.stop_lon], [s2.stop_lat, s2.stop_lon]],
                         fare=None,
+                        instruction=f"Transfer walk {int(round(dist_m))}m to {s2.stop_name} (~{w_min} mins)",
+                        instruction_ta=f"{s2.stop_name} இல் மாற {int(round(dist_m))} மீ நடந்து செல்லவும் (~{w_min} நிமி)",
+                        is_estimated=False,
                     ))
                     curr_stop = from_s
 
@@ -543,7 +672,19 @@ class RaptorRouter(BaseTransitRouter):
                         a_stop_data.stop_lat, a_stop_data.stop_lon
                     )
 
-                    mode_str = "METRO" if route.route_type in (1, 2) else "BUS"
+                    if route.route_type == 1 or "CMRL" in route.agency_id.upper():
+                        mode_str = "METRO"
+                        instr = f"Board Metro {route.route_short_name} towards {trip.headsign} at {b_stop_data.stop_name} ({len(inter_stops) + 1} stations)"
+                        instr_ta = f"{b_stop_data.stop_name} இல் {trip.headsign} நோக்கி செல்லும் மெட்ரோ {route.route_short_name} இல் ஏறவும் ({len(inter_stops) + 1} நிலையங்கள்)"
+                    elif route.route_type == 2 or "SR" in route.agency_id.upper():
+                        mode_str = "METRO"
+                        instr = f"Board Suburban EMU {route.route_short_name} towards {trip.headsign} at {b_stop_data.stop_name} ({len(inter_stops) + 1} stations)"
+                        instr_ta = f"{b_stop_data.stop_name} இல் புறநகர் ரயில் {route.route_short_name} இல் ஏறவும் ({len(inter_stops) + 1} நிலையங்கள்)"
+                    else:
+                        mode_str = "BUS"
+                        instr = f"Board Bus {route.route_short_name} towards {trip.headsign} at {b_stop_data.stop_name} ({len(inter_stops) + 1} stops)"
+                        instr_ta = f"{b_stop_data.stop_name} இல் {trip.headsign} நோக்கி செல்லும் பேருந்து {route.route_short_name} இல் ஏறவும் ({len(inter_stops) + 1} நிறுத்தங்கள்)"
+
                     leg_fare = fare_calculator.calculate_leg_fare(
                         agency_id=route.agency_id,
                         route_type=route.route_type,
@@ -577,6 +718,9 @@ class RaptorRouter(BaseTransitRouter):
                         intermediate_stops=inter_stops,
                         polyline=leg_polyline,
                         fare=leg_fare,
+                        instruction=instr,
+                        instruction_ta=instr_ta,
+                        is_estimated=False,
                     ))
 
                     curr_stop = board_s
@@ -596,12 +740,21 @@ class RaptorRouter(BaseTransitRouter):
                 continue
             seen_signatures.add(sig)
 
-            # Aggregate durations and fares
+            # Check if this itinerary can have a multimodal auto-feeder variant
+            can_add_auto_feeder = (
+                settings.enable_auto_taxi_legs
+                and request.allow_auto
+                and len(legs) >= 2
+                and any(l.leg_type == "WALK" and l.distance_meters >= 600.0 for l in legs)
+            )
+
+            # Aggregate durations and fares for base itinerary
             first_dep_sec = parse_time_to_seconds(legs[0].departure_time) or dep_sec
             last_arr_sec = parse_time_to_seconds(legs[-1].arrival_time) or cand_arr
 
             total_dur_min = max(1, int(math.ceil((last_arr_sec - first_dep_sec) / 60.0)))
             walk_min = sum(l.duration_minutes for l in legs if l.leg_type == "WALK")
+            auto_min = sum(l.duration_minutes for l in legs if l.leg_type == "AUTO")
             transit_min = sum(l.duration_minutes for l in legs if l.leg_type == "TRANSIT")
             transfers = max(0, sum(1 for l in legs if l.leg_type == "TRANSIT") - 1)
 
@@ -616,16 +769,94 @@ class RaptorRouter(BaseTransitRouter):
                 duration_minutes=total_dur_min,
                 walking_time_minutes=walk_min,
                 transit_time_minutes=transit_min,
+                auto_time_minutes=auto_min,
                 transfers_count=transfers,
                 legs=legs,
                 fare=total_fare_obj,
+                preference_applied=request.preference,
             ))
 
-            if len(itineraries) >= 4:
+            # Add multimodal auto-feeder variant (replacing long walks with auto)
+            if can_add_auto_feeder:
+                auto_legs: List[TransitLeg] = []
+                for l in legs:
+                    if l.leg_type == "WALK" and l.distance_meters >= 600.0:
+                        dist = l.distance_meters
+                        a_sec = max(120, int(math.ceil(dist / (22.0 * 1000.0 / 3600.0))))
+                        a_min = max(2, int(math.ceil(a_sec / 60.0)))
+                        dep_t_sec = parse_time_to_seconds(l.departure_time) or dep_sec
+                        a_fare = fare_calculator.calculate_auto_fare(dist, l.departure_time, mode="auto")
+                        auto_legs.append(TransitLeg(
+                            leg_type="AUTO",
+                            mode="AUTO",
+                            from_stop_id=l.from_stop_id,
+                            from_stop_name=l.from_stop_name,
+                            from_stop_lat=l.from_stop_lat,
+                            from_stop_lon=l.from_stop_lon,
+                            to_stop_id=l.to_stop_id,
+                            to_stop_name=l.to_stop_name,
+                            to_stop_lat=l.to_stop_lat,
+                            to_stop_lon=l.to_stop_lon,
+                            departure_time=l.departure_time,
+                            arrival_time=format_seconds_to_time(dep_t_sec + a_sec),
+                            duration_minutes=a_min,
+                            distance_meters=dist,
+                            intermediate_stops_count=0,
+                            intermediate_stops=[],
+                            polyline=l.polyline,
+                            fare=a_fare,
+                            instruction=f"Take Auto-rickshaw to {l.to_stop_name} (~{a_min} mins, ₹{a_fare.fare_amount} meter estimate)",
+                            instruction_ta=f"{l.to_stop_name} வரை ஆட்டோவில் செல்லவும் (~{a_min} நிமி, ₹{a_fare.fare_amount} மீட்டர் கட்டணம்)",
+                            is_estimated=True,
+                        ))
+                    else:
+                        auto_legs.append(l)
+
+                a_sig = tuple((l.mode, l.route_id, l.from_stop_id, l.to_stop_id, l.departure_time) for l in auto_legs)
+                if a_sig not in seen_signatures:
+                    seen_signatures.add(a_sig)
+                    a_fares = [l.fare for l in auto_legs if l.fare is not None]
+                    a_total_fare = fare_calculator.calculate_total_fare(a_fares)
+                    a_first_dep = parse_time_to_seconds(auto_legs[0].departure_time) or dep_sec
+                    a_last_arr = parse_time_to_seconds(auto_legs[-1].arrival_time) or cand_arr
+                    a_total_dur = max(1, int(math.ceil((a_last_arr - a_first_dep) / 60.0)))
+                    a_walk_min = sum(l.duration_minutes for l in auto_legs if l.leg_type == "WALK")
+                    a_auto_min = sum(l.duration_minutes for l in auto_legs if l.leg_type == "AUTO")
+                    a_transit_min = sum(l.duration_minutes for l in auto_legs if l.leg_type == "TRANSIT")
+
+                    itineraries.append(Itinerary(
+                        itinerary_id=f"ITIN_{len(itineraries) + 1:02d}",
+                        departure_time=format_seconds_to_time(a_first_dep),
+                        arrival_time=format_seconds_to_time(a_last_arr),
+                        duration_minutes=a_total_dur,
+                        walking_time_minutes=a_walk_min,
+                        transit_time_minutes=a_transit_min,
+                        auto_time_minutes=a_auto_min,
+                        transfers_count=transfers,
+                        legs=auto_legs,
+                        fare=a_total_fare,
+                        preference_applied=request.preference,
+                    ))
+
+            if len(itineraries) >= 6:
                 break
 
-        # Sort itineraries by arrival time and duration
-        itineraries.sort(key=lambda it: (it.duration_minutes, it.transfers_count))
+        # Preference Sorting
+        pref = (request.preference or "fastest").lower().strip()
+        for it in itineraries:
+            it.preference_applied = pref
+
+        if pref == "fewest_transfers":
+            itineraries.sort(key=lambda it: (it.transfers_count, it.duration_minutes, it.fare.cash_total))
+        elif pref == "least_walking":
+            itineraries.sort(key=lambda it: (it.walking_time_minutes, it.duration_minutes, it.transfers_count))
+        elif pref == "cheapest":
+            if request.is_female:
+                itineraries.sort(key=lambda it: (it.fare.women_fare_total, it.duration_minutes, it.transfers_count))
+            else:
+                itineraries.sort(key=lambda it: (it.fare.cash_total, it.duration_minutes, it.transfers_count))
+        else:  # "fastest"
+            itineraries.sort(key=lambda it: (it.duration_minutes, it.transfers_count, it.fare.cash_total))
 
         return TripPlanResponse(
             origin={"lat": request.origin_lat, "lon": request.origin_lon},

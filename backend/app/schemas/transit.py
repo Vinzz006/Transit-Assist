@@ -64,8 +64,8 @@ class TotalFare(BaseModel):
     breakdown: List[FareBreakdown]
 
 class TransitLeg(BaseModel):
-    leg_type: str  # "WALK", "TRANSIT"
-    mode: str  # "WALK", "BUS", "METRO"
+    leg_type: str  # "WALK", "TRANSIT", "AUTO", "TAXI"
+    mode: str  # "WALK", "BUS", "METRO", "SUBURBAN_RAIL", "AUTO", "TAXI"
     route_id: Optional[str] = None
     route_short_name: Optional[str] = None
     route_long_name: Optional[str] = None
@@ -88,6 +88,9 @@ class TransitLeg(BaseModel):
     intermediate_stops: List[StopBase] = []
     polyline: List[List[float]] = []  # [[lat, lon], ...]
     fare: Optional[FareBreakdown] = None
+    instruction: Optional[str] = None
+    instruction_ta: Optional[str] = None
+    is_estimated: bool = False
 
 class Itinerary(BaseModel):
     itinerary_id: str
@@ -96,9 +99,11 @@ class Itinerary(BaseModel):
     duration_minutes: int
     walking_time_minutes: int
     transit_time_minutes: int
+    auto_time_minutes: int = 0
     transfers_count: int
     legs: List[TransitLeg]
     fare: TotalFare
+    preference_applied: Optional[str] = "fastest"
 
 class TripPlanRequest(BaseModel):
     origin_lat: float = Field(..., ge=-90, le=90)
@@ -109,6 +114,8 @@ class TripPlanRequest(BaseModel):
     is_female: bool = False
     max_transfers: int = 3
     walk_speed_mps: float = 1.2
+    preference: str = "fastest"  # "fastest", "fewest_transfers", "least_walking", "cheapest"
+    allow_auto: bool = True
 
 class TripPlanResponse(BaseModel):
     origin: Dict[str, Any]
