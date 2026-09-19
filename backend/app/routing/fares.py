@@ -197,6 +197,77 @@ class FareCalculator:
             currency_symbol="₹",
         )
 
+    def calculate_auto_fare(
+        self,
+        distance_meters: float,
+        departure_time: Optional[str] = None,
+        mode: str = "auto",
+    ) -> FareBreakdown:
+        """
+        Calculate auto-rickshaw (or cab) fare according to Tamil Nadu Government meter rates.
+        Includes 50% night surcharge between 23:00 and 05:00.
+        """
+        distance_km = max(0.1, distance_meters / 1000.0)
+        im_cfg = self.config.get("intermediate_modes", {})
+
+        if mode == "taxi":
+            cfg = im_cfg.get("taxi_cab", {
+                "base_fare": 100.0,
+                "base_km": 4.0,
+                "per_km_rate": 18.0,
+                "night_surcharge_pct": 25.0,
+            })
+            agency = "TAXI_EST"
+            scheme = "Cab Estimate (Non-Surge)"
+        else:
+            cfg = im_cfg.get("auto_rickshaw", {
+                "base_fare": 25.0,
+                "base_km": 1.8,
+                "per_km_rate": 12.0,
+                "night_surcharge_pct": 50.0,
+            })
+            agency = "AUTO_TN"
+            scheme = "TN Govt Auto Meter Rate"
+
+        base_fare = float(cfg.get("base_fare", 25.0))
+        base_km = float(cfg.get("base_km", 1.8))
+        per_km = float(cfg.get("per_km_rate", 12.0))
+        night_pct = float(cfg.get("night_surcharge_pct", 50.0))
+
+        if distance_km <= base_km:
+            calculated_fare = base_fare
+        else:
+            calculated_fare = base_fare + ((distance_km - base_km) * per_km)
+
+        # Check for night hours (23:00 to 05:00)
+        is_night = False
+        if departure_time:
+            try:
+                parts = departure_time.strip().split(":")
+                hour = int(parts[0])
+                if hour >= 23 or hour < 5:
+                    is_night = True
+            except Exception:
+                pass
+
+        if is_night:
+            calculated_fare = calculated_fare * (1.0 + (night_pct / 100.0))
+            scheme = f"{scheme} + Night Surcharge ({int(night_pct)}%)"
+
+        final_fare = float(round(calculated_fare))
+
+        return FareBreakdown(
+            agency_id=agency,
+            mode=mode,
+            service_type="meter_fare" if mode == "auto" else "estimated_cab",
+            distance_km=round(distance_km, 2),
+            fare_amount=final_fare,
+            discounted_amount=final_fare,
+            scheme_applied=scheme,
+            currency="INR",
+            currency_symbol="₹",
+        )
+
     def calculate_total_fare(self, leg_fares: List[FareBreakdown]) -> TotalFare:
         """Aggregate leg fares into cash total, smartcard total, and women total."""
         cash_sum = 0.0
