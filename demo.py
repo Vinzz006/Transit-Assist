@@ -133,13 +133,29 @@ def main():
     print()
 
     # 5. Scheduled Arrivals
-    print("[5/5] Checking Upcoming Scheduled Arrivals at Chennai Central...")
+    print("[5/6] Checking Upcoming Scheduled Arrivals at Chennai Central...")
     try:
         arrivals = get(f"{BASE_URL}/api/arrivals?stop_id=ST_CENTRAL&limit=3")
         for arr in arrivals:
             print(f"   • Line {arr.get('route_short_name')} towards {arr.get('headsign')} at {arr.get('departure_time')} (in {arr.get('eta_minutes')} mins)")
     except Exception as e:
         print(f"  Error getting arrivals: {e}")
+    print()
+
+    # 6. Real-Time Vehicle Tracking & GTFS-RT
+    print("[6/6] Testing Live Vehicle Tracking & GTFS-RT Feed (08:30 AM Peak)...")
+    try:
+        vehicles = get(f"{BASE_URL}/api/realtime/vehicles?time=08:30:00")
+        print(f"  Active vehicles tracked: {len(vehicles)}")
+        for v in vehicles[:4]:
+            mode_name = "Metro" if v.get("route_type") == 1 else "Suburban" if v.get("route_type") == 2 else "Bus"
+            status_desc = f"At {v.get('current_stop_name')}" if v.get("current_status") == "STOPPED_AT" else f"En route to {v.get('next_stop_name')}"
+            print(f"   • [{mode_name:8}] Line {v.get('route_short_name'):<6} | {v.get('speed_kmh', 0)} km/h | Bearing {v.get('bearing')}° | {status_desc} | {v.get('occupancy_status')}")
+
+        feed = get(f"{BASE_URL}/api/realtime/gtfs-rt?time=08:30:00")
+        print(f"  GTFS-RT Feed Version: {feed.get('header', {}).get('gtfs_realtime_version')}, Entities: {len(feed.get('entity', []))}")
+    except Exception as e:
+        print(f"  Error querying real-time tracking: {e}")
     print()
 
     print("=" * 68)

@@ -153,3 +153,47 @@ export interface RouteCrowdSummary {
   latest_reports: ReportItem[];
 }
 
+export interface VehiclePosition {
+  vehicle_id: string;
+  trip_id: string;
+  route_id: string;
+  route_short_name: string;
+  route_long_name: string;
+  route_type: number; // 1=Metro, 2=Rail, 3=Bus
+  agency_id: string;
+  latitude: number;
+  longitude: number;
+  bearing: number;
+  speed_kmh: number;
+  current_status: "IN_TRANSIT_TO" | "STOPPED_AT" | "INCOMING_AT";
+  current_stop_id?: string;
+  current_stop_name?: string;
+  current_stop_sequence: number;
+  next_stop_id?: string;
+  next_stop_name?: string;
+  delay_seconds: number;
+  delay_minutes: number;
+  occupancy_status: "MANY_SEATS_AVAILABLE" | "FEW_SEATS_AVAILABLE" | "STANDING_ROOM_ONLY" | "FULL";
+  timestamp: number;
+}
+
+export interface StopTimeUpdate {
+  stop_sequence: number;
+  stop_id: string;
+  stop_name: string;
+  arrival_time: string;
+  departure_time: string;
+  arrival_delay: number;
+  departure_delay: number;
+}
+
+export interface TripUpdate {
+  trip_id: string;
+  route_id: string;
+  route_short_name: string;
+  delay_seconds: number;
+  delay_minutes: number;
+  stop_time_updates: StopTimeUpdate[];
+  timestamp: number;
+}
+

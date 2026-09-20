@@ -1007,3 +1007,59 @@ input:checked + .slider:before {
     height: 45%;
   }
 }
+
+/* Real-time Vehicle Tracking Styles */
+.live-vehicle-marker {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 5;
+}
+
+.live-vehicle-marker:hover {
+  z-index: 20;
+}
+
+.live-vehicle-marker:hover .vehicle-pin {
+  transform: scale(1.18);
+}
+
+.live-vehicle-marker.selected {
+  z-index: 25;
+}
+
+.live-vehicle-marker.selected .vehicle-pin {
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.95);
+  border-color: #38BDF8;
+}
+
+.pulse-icon {
+  animation: pulse-green 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+    filter: drop-shadow(0 0 6px #10B981);
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.7;
+  }
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

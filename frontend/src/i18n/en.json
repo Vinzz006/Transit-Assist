@@ -137,5 +137,14 @@
     "suburban": "Suburban Rail",
     "mrts": "MRTS Rail",
     "walk": "Walk"
+  },
+  "realtime": {
+    "title": "Live Vehicle Tracking",
+    "speed": "Speed",
+    "delay": "Status",
+    "occupancy": "Crowd",
+    "on_time": "On Time",
+    "live_off": "Live GPS",
+    "next_stop": "Next Stop"
   }
 }

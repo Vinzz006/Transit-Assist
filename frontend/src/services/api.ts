@@ -8,6 +8,8 @@ import type {
   ReportCreateRequest,
   ReportItem,
   RouteCrowdSummary,
+  VehiclePosition,
+  TripUpdate,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -86,6 +88,24 @@ export const api = {
 
   getRouteCrowdSummary: (routeId: string): Promise<RouteCrowdSummary> => {
     return fetchJson<RouteCrowdSummary>(`${API_BASE_URL}/api/reports/summary/${encodeURIComponent(routeId)}`);
+  },
+
+  getRealtimeVehicles: (params?: { time?: string; route_id?: string; route_type?: number; bounds?: string }): Promise<VehiclePosition[]> => {
+    const q = new URLSearchParams();
+    if (params?.time) q.append("time", params.time);
+    if (params?.route_id) q.append("route_id", params.route_id);
+    if (params?.route_type !== undefined) q.append("route_type", params.route_type.toString());
+    if (params?.bounds) q.append("bounds", params.bounds);
+    const qs = q.toString();
+    return fetchJson<VehiclePosition[]>(`${API_BASE_URL}/api/realtime/vehicles${qs ? `?${qs}` : ""}`);
+  },
+
+  getTripUpdates: (params?: { time?: string; route_id?: string }): Promise<TripUpdate[]> => {
+    const q = new URLSearchParams();
+    if (params?.time) q.append("time", params.time);
+    if (params?.route_id) q.append("route_id", params.route_id);
+    const qs = q.toString();
+    return fetchJson<TripUpdate[]>(`${API_BASE_URL}/api/realtime/trip-updates${qs ? `?${qs}` : ""}`);
   },
 };
 
