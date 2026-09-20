@@ -89,6 +89,10 @@ export interface TransitLeg {
   instruction?: string;
   instruction_ta?: string;
   is_estimated?: boolean;
+  predicted_delay_minutes?: number;
+  weather_risk?: string;
+  advisory_en?: string;
+  advisory_ta?: string;
 }
 
 export interface Itinerary {
@@ -103,6 +107,9 @@ export interface Itinerary {
   legs: TransitLeg[];
   fare: TotalFare;
   preference_applied?: string;
+  predicted_delay_minutes?: number;
+  weather_condition?: "clear" | "rain" | "monsoon";
+  monsoon_warning?: string;
 }
 
 export interface TripPlanRequest {
@@ -116,6 +123,7 @@ export interface TripPlanRequest {
   walk_speed_mps?: number;
   preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
   allow_auto?: boolean;
+  weather?: "clear" | "rain" | "monsoon";
 }
 
 export interface TripPlanResponse {
@@ -195,5 +203,31 @@ export interface TripUpdate {
   delay_minutes: number;
   stop_time_updates: StopTimeUpdate[];
   timestamp: number;
+}
+
+export interface DelayPrediction {
+  route_id: string;
+  route_short_name: string;
+  mode: string;
+  weather: string;
+  predicted_delay_minutes: number;
+  confidence_score: number;
+  risk_level: "LOW" | "MODERATE" | "HIGH";
+  corridor_name?: string;
+  is_waterlogging_prone: boolean;
+  advisory_en: string;
+  advisory_ta: string;
+}
+
+export interface CorridorRiskItem {
+  corridor_id: string;
+  name_en: string;
+  name_ta: string;
+  routes: string[];
+  waterlogging_risk: "NONE" | "MODERATE" | "SEVERE";
+  typical_peak_delay_min: number;
+  monsoon_delay_min: number;
+  advice_en: string;
+  advice_ta: string;
 }
 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users } from "lucide-react";
+import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck } from "lucide-react";
 import type { Itinerary, TransitLeg } from "../types";
 
 interface ItineraryCardProps {
@@ -60,7 +60,44 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
     >
       <div className="itinerary-header">
         <div className="itinerary-time-summary">
-          <span className="itinerary-duration">{itinerary.duration_minutes} min</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span className="itinerary-duration">{itinerary.duration_minutes} min</span>
+            {itinerary.predicted_delay_minutes !== undefined && itinerary.predicted_delay_minutes > 0 ? (
+              <span
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 700,
+                  color: "#F59E0B",
+                  backgroundColor: "rgba(245, 158, 11, 0.15)",
+                  border: "1px solid rgba(245, 158, 11, 0.3)",
+                  padding: "1px 6px",
+                  borderRadius: "4px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "3px",
+                }}
+              >
+                <Clock size={10} /> +{itinerary.predicted_delay_minutes}m {t("predict.delay", "delay")}
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: "10px",
+                  fontWeight: 600,
+                  color: "#10B981",
+                  backgroundColor: "rgba(16, 185, 129, 0.12)",
+                  border: "1px solid rgba(16, 185, 129, 0.25)",
+                  padding: "1px 5px",
+                  borderRadius: "4px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "3px",
+                }}
+              >
+                <ShieldCheck size={10} /> {t("predict.on_time", "On Time")}
+              </span>
+            )}
+          </div>
           <span className="itinerary-window">
             {itinerary.departure_time.slice(0, 5)} - {itinerary.arrival_time.slice(0, 5)}
           </span>
@@ -69,6 +106,27 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
           {displayFare}
         </div>
       </div>
+
+      {/* Monsoon Alert Warning Banner */}
+      {itinerary.monsoon_warning && (
+        <div
+          style={{
+            margin: "4px 0 8px 0",
+            padding: "5px 8px",
+            backgroundColor: "rgba(239, 68, 68, 0.14)",
+            border: "1px solid rgba(239, 68, 68, 0.35)",
+            borderRadius: "var(--radius-sm)",
+            fontSize: "11px",
+            color: "#FCA5A5",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <AlertTriangle size={13} color="#EF4444" style={{ flexShrink: 0 }} />
+          <span>{itinerary.monsoon_warning}</span>
+        </div>
+      )}
 
       {/* Badges Chain */}
       <div className="legs-badge-row">
@@ -228,6 +286,23 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
                         ({leg.fare.scheme_applied})
                       </span>
                     )}
+                  </div>
+                )}
+
+                {/* AI Weather & Corridor Advisory */}
+                {leg.advisory_en && (
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      padding: "4px 8px",
+                      backgroundColor: leg.weather_risk === "HIGH" ? "rgba(239, 68, 68, 0.12)" : "var(--bg-surface)",
+                      borderLeft: leg.weather_risk === "HIGH" ? "2px solid #EF4444" : "2px solid var(--accent-blue)",
+                      borderRadius: "0 var(--radius-sm) var(--radius-sm) 0",
+                      fontSize: "10.5px",
+                      color: leg.weather_risk === "HIGH" ? "#FCA5A5" : "var(--text-secondary)",
+                    }}
+                  >
+                    {i18n.language === "ta" && leg.advisory_ta ? leg.advisory_ta : leg.advisory_en}
                   </div>
                 )}
               </div>

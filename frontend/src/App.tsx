@@ -73,6 +73,7 @@ export const App: React.FC = () => {
     destination: { lat: number; lon: number; name: string };
     isFemale: boolean;
     preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
+    weather?: "clear" | "rain" | "monsoon";
   }) => {
     const pref = params.preference || currentPreference;
     setCurrentPreference(pref);
@@ -90,6 +91,7 @@ export const App: React.FC = () => {
         is_female: params.isFemale,
         preference: pref,
         allow_auto: true,
+        weather: params.weather || "clear",
       })
       .then((res: TripPlanResponse) => {
         setItineraries(res.itineraries);

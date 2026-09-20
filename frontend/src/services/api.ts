@@ -10,9 +10,11 @@ import type {
   RouteCrowdSummary,
   VehiclePosition,
   TripUpdate,
+  DelayPrediction,
+  CorridorRiskItem,
 } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -106,6 +108,20 @@ export const api = {
     if (params?.route_id) q.append("route_id", params.route_id);
     const qs = q.toString();
     return fetchJson<TripUpdate[]>(`${API_BASE_URL}/api/realtime/trip-updates${qs ? `?${qs}` : ""}`);
+  },
+
+  predictDelay: (params: { route_id: string; departure_time?: string; weather?: string }): Promise<DelayPrediction> => {
+    const q = new URLSearchParams({ route_id: params.route_id });
+    if (params.departure_time) q.append("departure_time", params.departure_time);
+    if (params.weather) q.append("weather", params.weather);
+    return fetchJson<DelayPrediction>(`${API_BASE_URL}/api/predict/delay?${q.toString()}`);
+  },
+
+  getCorridors: (weather?: string): Promise<{ weather: string; active_corridors_count: number; corridors: CorridorRiskItem[] }> => {
+    const q = new URLSearchParams();
+    if (weather) q.append("weather", weather);
+    const qs = q.toString();
+    return fetchJson<{ weather: string; active_corridors_count: number; corridors: CorridorRiskItem[] }>(`${API_BASE_URL}/api/predict/corridors${qs ? `?${qs}` : ""}`);
   },
 };
 

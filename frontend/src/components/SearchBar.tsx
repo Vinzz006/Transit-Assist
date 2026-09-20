@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, MapPin, ArrowUpDown, Navigation, Mic, MicOff } from "lucide-react";
+import { Search, MapPin, ArrowUpDown, Navigation, Mic, MicOff, Sun, CloudRain, CloudLightning } from "lucide-react";
 import type { StopDetail } from "../types";
 import { api } from "../services/api";
 
@@ -10,6 +10,7 @@ interface SearchBarProps {
     destination: { lat: number; lon: number; name: string };
     isFemale: boolean;
     preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
+    weather?: "clear" | "rain" | "monsoon";
   }) => void;
   isFemalePref: boolean;
   onToggleFemale: (val: boolean) => void;
@@ -26,6 +27,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const [preference, setPreference] = useState<"fastest" | "fewest_transfers" | "least_walking" | "cheapest">(currentPreference);
+  const [weather, setWeather] = useState<"clear" | "rain" | "monsoon">("clear");
 
   const [originText, setOriginText] = useState("Chennai Central");
   const [originCoord, setOriginCoord] = useState<{ lat: number; lon: number; name: string } | null>({
@@ -172,6 +174,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       destination: destCoord,
       isFemale: isFemalePref,
       preference,
+      weather,
     });
   };
 
@@ -342,6 +345,44 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               }}
             >
               {t(`preferences.${pref}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Chennai Weather & Monsoon Delay Simulator */}
+      <div className="weather-section" style={{ margin: "0 0 16px 0" }}>
+        <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "6px", fontWeight: 600, display: "flex", alignItems: "center", gap: "5px" }}>
+          <span>{t("weather.title", "Monsoon & Traffic Risk")}</span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "6px" }}>
+          {[
+            { id: "clear", label: t("weather.clear", "Normal"), icon: <Sun size={12} color="#FBBF24" /> },
+            { id: "rain", label: t("weather.rain", "Rain"), icon: <CloudRain size={12} color="#60A5FA" /> },
+            { id: "monsoon", label: t("weather.monsoon", "Monsoon Alert"), icon: <CloudLightning size={12} color="#F87171" /> },
+          ].map((w) => (
+            <button
+              key={w.id}
+              type="button"
+              className={`chip ${weather === w.id ? "active" : ""}`}
+              style={{
+                fontSize: "11px",
+                padding: "6px 4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "4px",
+                borderRadius: "var(--radius-sm)",
+                border: weather === w.id ? (w.id === "monsoon" ? "1px solid #EF4444" : "1px solid var(--accent-blue)") : "1px solid var(--border-color)",
+                backgroundColor: weather === w.id ? (w.id === "monsoon" ? "rgba(239, 68, 68, 0.18)" : "rgba(0, 102, 204, 0.15)") : "var(--bg-card)",
+                color: weather === w.id ? (w.id === "monsoon" ? "#EF4444" : "var(--accent-blue)") : "var(--text-secondary)",
+                cursor: "pointer",
+                fontWeight: weather === w.id ? 700 : 400,
+              }}
+              onClick={() => setWeather(w.id as any)}
+            >
+              {w.icon}
+              <span>{w.label}</span>
             </button>
           ))}
         </div>

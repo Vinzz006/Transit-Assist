@@ -32,7 +32,7 @@ export default defineConfig({
       workbox: {
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/basemaps\.cartocdn\.com\/.*/i,
+            urlPattern: /^https:\/\/services\.arcgisonline\.com\/.*/i,
             handler: "CacheFirst",
             options: {
               cacheName: "map-tiles-cache",
@@ -64,7 +64,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:8000",
+        target: "http://127.0.0.1:8001",
         changeOrigin: true,
       },
     },

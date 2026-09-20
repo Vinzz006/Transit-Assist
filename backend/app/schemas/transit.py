@@ -91,6 +91,10 @@ class TransitLeg(BaseModel):
     instruction: Optional[str] = None
     instruction_ta: Optional[str] = None
     is_estimated: bool = False
+    predicted_delay_minutes: int = 0
+    weather_risk: Optional[str] = None
+    advisory_en: Optional[str] = None
+    advisory_ta: Optional[str] = None
 
 class Itinerary(BaseModel):
     itinerary_id: str
@@ -104,6 +108,9 @@ class Itinerary(BaseModel):
     legs: List[TransitLeg]
     fare: TotalFare
     preference_applied: Optional[str] = "fastest"
+    predicted_delay_minutes: int = 0
+    weather_condition: Optional[str] = "clear"
+    monsoon_warning: Optional[str] = None
 
 class TripPlanRequest(BaseModel):
     origin_lat: float = Field(..., ge=-90, le=90)
@@ -116,6 +123,7 @@ class TripPlanRequest(BaseModel):
     walk_speed_mps: float = 1.2
     preference: str = "fastest"  # "fastest", "fewest_transfers", "least_walking", "cheapest"
     allow_auto: bool = True
+    weather: Optional[str] = "clear"  # "clear", "rain", "monsoon"
 
 class TripPlanResponse(BaseModel):
     origin: Dict[str, Any]

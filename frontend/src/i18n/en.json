@@ -146,5 +146,16 @@
     "on_time": "On Time",
     "live_off": "Live GPS",
     "next_stop": "Next Stop"
+  },
+  "weather": {
+    "title": "Monsoon & Traffic Risk",
+    "clear": "Normal",
+    "rain": "Rain",
+    "monsoon": "Monsoon Alert"
+  },
+  "predict": {
+    "delay": "delay",
+    "on_time": "On Time",
+    "waterlogging": "Waterlogging Risk"
   }
 }
