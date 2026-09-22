@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck, Bell, Star, Accessibility } from "lucide-react";
 import type { Itinerary, TransitLeg } from "../types";
 
 interface ItineraryCardProps {
@@ -10,6 +10,9 @@ interface ItineraryCardProps {
   isFemalePref: boolean;
   onShareTrip?: () => void;
   onReportCrowd?: (routeId: string, routeName: string) => void;
+  onSetAlert?: () => void;
+  isBookmarked?: boolean;
+  onToggleBookmark?: () => void;
 }
 
 export const ItineraryCard: React.FC<ItineraryCardProps> = ({
@@ -19,6 +22,9 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
   isFemalePref,
   onShareTrip,
   onReportCrowd,
+  onSetAlert,
+  isBookmarked = false,
+  onToggleBookmark,
 }) => {
   const { t, i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -101,6 +107,26 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
           <span className="itinerary-window">
             {itinerary.departure_time.slice(0, 5)} - {itinerary.arrival_time.slice(0, 5)}
           </span>
+          {itinerary.is_wheelchair_accessible && (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "10px",
+                fontWeight: 700,
+                color: "#38BDF8",
+                backgroundColor: "rgba(56, 189, 248, 0.12)",
+                border: "1px solid rgba(56, 189, 248, 0.3)",
+                padding: "1px 6px",
+                borderRadius: "4px",
+                marginTop: "3px",
+              }}
+            >
+              <Accessibility size={11} />
+              <span>{t("accessibility.step_free", "Step-Free")}</span>
+            </div>
+          )}
         </div>
         <div className={`fare-pill ${isFree ? "free" : ""}`}>
           {displayFare}
@@ -311,6 +337,32 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
 
           {/* Action Row */}
           <div className="itinerary-action-bar">
+            {onSetAlert && (
+              <button
+                type="button"
+                className="btn-card-action"
+                style={{ color: "#38BDF8" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSetAlert();
+                }}
+              >
+                <Bell size={13} /> {t("alerts.btn", "Alert")}
+              </button>
+            )}
+            {onToggleBookmark && (
+              <button
+                type="button"
+                className="btn-card-action"
+                style={{ color: isBookmarked ? "#F59E0B" : "var(--text-secondary)" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleBookmark();
+                }}
+              >
+                <Star size={13} fill={isBookmarked ? "#F59E0B" : "none"} /> {isBookmarked ? t("saved.saved", "Saved") : t("saved.save", "Save")}
+              </button>
+            )}
             {onShareTrip && (
               <button
                 type="button"
@@ -320,7 +372,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
                   onShareTrip();
                 }}
               >
-                <Share2 size={14} /> {t("safety.shareTripTitle", "Share Trip")}
+                <Share2 size={13} /> {t("safety.shareTripTitle", "Share")}
               </button>
             )}
             {onReportCrowd && (
@@ -335,7 +387,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
                   onReportCrowd(rId, rName);
                 }}
               >
-                <Users size={14} /> {t("report.reportBtn", "Report Crowd")}
+                <Users size={13} /> {t("report.reportBtn", "Crowd")}
               </button>
             )}
           </div>

@@ -11,7 +11,9 @@ import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { LowDataToggle } from "./components/LowDataToggle";
 import { SafetyShareModal } from "./components/SafetyShareModal";
 import { CrowdReportModal } from "./components/CrowdReportModal";
-import { ShieldAlert } from "lucide-react";
+import { SavedPlaces } from "./components/SavedPlaces";
+import { DepartureAlertModal } from "./components/DepartureAlertModal";
+import { ShieldAlert, Bookmark } from "lucide-react";
 
 import type { Itinerary, StopBase, TripPlanResponse } from "./types";
 import { api } from "./services/api";
@@ -21,7 +23,7 @@ export const App: React.FC = () => {
   const { t } = useTranslation();
   const prefs = cache.getPrefs();
 
-  const [activeTab, setActiveTab] = useState<"plan" | "nearby" | "routes">("plan");
+  const [activeTab, setActiveTab] = useState<"plan" | "nearby" | "routes" | "saved">("plan");
   const [origin, setOrigin] = useState<{ lat: number; lon: number; name: string }>({
     lat: 13.0827,
     lon: 80.2754,
@@ -37,15 +39,18 @@ export const App: React.FC = () => {
   const [lowDataMode, setLowDataMode] = useState(prefs.lowDataMode);
   const [currentPreference, setCurrentPreference] = useState<"fastest" | "fewest_transfers" | "least_walking" | "cheapest">("fastest");
   const [weather, setWeather] = useState<"clear" | "rain" | "monsoon">("clear");
+  const [wheelchairPref, setWheelchairPref] = useState<boolean>(false);
 
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
   const [selectedItinIndex, setSelectedItinIndex] = useState<number>(0);
   const [nearbyStops, setNearbyStops] = useState<StopBase[]>([]);
   const [loading, setLoading] = useState(false);
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Phase 8 Modals
+  // Phase 8 & 11 Modals
   const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
   const [crowdModalRoute, setCrowdModalRoute] = useState<{ id: string; name: string } | null>(null);
+  const [alertModalItin, setAlertModalItin] = useState<Itinerary | null>(null);
 
   // Initial load: Fetch nearby stops and seed initial plan
   useEffect(() => {
@@ -60,7 +65,10 @@ export const App: React.FC = () => {
       cache.cacheStops(allStops);
     }).catch(() => {});
 
-    // 3. Trigger initial journey search
+    // 3. Load bookmarked itineraries
+    setBookmarkedIds(cache.getBookmarkedItineraries().map((it) => it.itinerary_id));
+
+    // 4. Trigger initial journey search
     handlePlanJourney({
       origin: { lat: 13.0827, lon: 80.2754, name: "Chennai Central" },
       destination: { lat: 12.9780, lon: 80.1640, name: "Chennai Airport" },
@@ -75,11 +83,14 @@ export const App: React.FC = () => {
     isFemale: boolean;
     preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
     weather?: "clear" | "rain" | "monsoon";
+    wheelchairAccessible?: boolean;
   }) => {
     const pref = params.preference || currentPreference;
     const currentW = params.weather || weather;
+    const isWheelchair = params.wheelchairAccessible !== undefined ? params.wheelchairAccessible : wheelchairPref;
     setCurrentPreference(pref);
     setWeather(currentW);
+    setWheelchairPref(isWheelchair);
     setLoading(true);
     setOrigin(params.origin);
     setDestination(params.destination);
@@ -95,6 +106,7 @@ export const App: React.FC = () => {
         preference: pref,
         allow_auto: true,
         weather: currentW,
+        wheelchair_accessible: isWheelchair,
       })
       .then((res: TripPlanResponse) => {
         setItineraries(res.itineraries);
@@ -172,6 +184,14 @@ export const App: React.FC = () => {
             <RouteIcon size={14} />
             <span>{t("nav.routes")}</span>
           </button>
+          <button
+            type="button"
+            className={`nav-tab-btn ${activeTab === "saved" ? "active" : ""}`}
+            onClick={() => setActiveTab("saved")}
+          >
+            <Bookmark size={14} />
+            <span>{t("nav.saved", "Saved")}</span>
+          </button>
         </nav>
 
         {/* Panel Content Area */}
@@ -210,6 +230,18 @@ export const App: React.FC = () => {
                     isFemale: isFemalePref,
                     preference: currentPreference,
                     weather: w,
+                    wheelchairAccessible: wheelchairPref,
+                  });
+                }}
+                wheelchairPref={wheelchairPref}
+                onToggleWheelchair={(val) => {
+                  handlePlanJourney({
+                    origin,
+                    destination,
+                    isFemale: isFemalePref,
+                    preference: currentPreference,
+                    weather,
+                    wheelchairAccessible: val,
                   });
                 }}
               />
@@ -257,6 +289,12 @@ export const App: React.FC = () => {
                       isFemalePref={isFemalePref}
                       onShareTrip={() => setIsSafetyModalOpen(true)}
                       onReportCrowd={(rId, rName) => setCrowdModalRoute({ id: rId, name: rName })}
+                      onSetAlert={() => setAlertModalItin(itin)}
+                      isBookmarked={bookmarkedIds.includes(itin.itinerary_id)}
+                      onToggleBookmark={() => {
+                        cache.toggleBookmarkItinerary(itin);
+                        setBookmarkedIds(cache.getBookmarkedItineraries().map((b) => b.itinerary_id));
+                      }}
                     />
                   ))
                 )}
@@ -278,6 +316,45 @@ export const App: React.FC = () => {
           {activeTab === "routes" && (
             <RouteDetail
               onOpenReportModal={(rId, rName) => setCrowdModalRoute({ id: rId, name: rName })}
+            />
+          )}
+
+          {/* TAB 4: SAVED PLACES & COMMUTE HUBS */}
+          {activeTab === "saved" && (
+            <SavedPlaces
+              onSelectRouteFrom={(p) => {
+                setOrigin(p);
+                setActiveTab("plan");
+                handlePlanJourney({
+                  origin: p,
+                  destination,
+                  isFemale: isFemalePref,
+                  preference: currentPreference,
+                  weather,
+                  wheelchairAccessible: wheelchairPref,
+                });
+              }}
+              onSelectRouteTo={(p) => {
+                setDestination(p);
+                setActiveTab("plan");
+                handlePlanJourney({
+                  origin,
+                  destination: p,
+                  isFemale: isFemalePref,
+                  preference: currentPreference,
+                  weather,
+                  wheelchairAccessible: wheelchairPref,
+                });
+              }}
+              onSelectItinerary={(itin) => {
+                const firstLeg = itin.legs[0];
+                const lastLeg = itin.legs[itin.legs.length - 1];
+                setOrigin({ lat: firstLeg.from_stop_lat, lon: firstLeg.from_stop_lon, name: firstLeg.from_stop_name });
+                setDestination({ lat: lastLeg.to_stop_lat, lon: lastLeg.to_stop_lon, name: lastLeg.to_stop_name });
+                setItineraries([itin]);
+                setSelectedItinIndex(0);
+                setActiveTab("plan");
+              }}
             />
           )}
         </main>
@@ -314,6 +391,17 @@ export const App: React.FC = () => {
           onClose={() => setCrowdModalRoute(null)}
           defaultRouteId={crowdModalRoute.id}
           defaultRouteName={crowdModalRoute.name}
+        />
+      )}
+
+      {/* Departure Alert & Audio Chime Modal */}
+      {alertModalItin && (
+        <DepartureAlertModal
+          isOpen={!!alertModalItin}
+          onClose={() => setAlertModalItin(null)}
+          itinerary={alertModalItin}
+          originName={origin.name}
+          destinationName={destination.name}
         />
       )}
     </div>

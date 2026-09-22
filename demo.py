@@ -159,7 +159,7 @@ def main():
     print()
 
     # 7. Predictive Delay & Monsoon Intelligence
-    print("[7/7] Testing Predictive AI Delay & Monsoon Corridor Intelligence...")
+    print("[7/8] Testing Predictive AI Delay & Monsoon Corridor Intelligence...")
     try:
         # Check Metro resilience during monsoon
         metro_pred = get(f"{BASE_URL}/api/predict/delay?route_id=CMRL_BLUE&weather=monsoon")
@@ -181,6 +181,29 @@ def main():
             print(f"   • {c.get('corridor_name')}: Peak delay +{c.get('monsoon_delay_min')}m | Flood Risk: {c.get('waterlogging_risk')}")
     except Exception as e:
         print(f"  Error querying predictive delay intelligence: {e}")
+    print()
+
+    # 8. Step-Free Accessibility & Station Facilities
+    print("[8/8] Testing Step-Free Station Accessibility & Wheelchair Transit Routing...")
+    try:
+        stations = get(f"{BASE_URL}/api/accessibility/stations")
+        print(f"  Monitored Accessible Hubs: {len(stations)} stations cataloged")
+        for st in stations[:3]:
+            print(f"   • {st.get('station_name')} ({st.get('mode')}): {st.get('accessibility_level')} Step-Free | Elevators: {st.get('elevator_count')} | Tactile Paths: {st.get('has_tactile_paths')}")
+
+        # Wheelchair accessible plan query
+        acc_plan = post(f"{BASE_URL}/api/plan", {
+            "origin_lat": 13.0827,
+            "origin_lon": 80.2754,
+            "destination_lat": 12.9780,
+            "destination_lon": 80.1640,
+            "departure_time": "08:30:00",
+            "wheelchair_accessible": True,
+        })
+        first_acc = acc_plan.get("itineraries", [])[0] if acc_plan.get("itineraries") else {}
+        print(f"  Wheelchair Accessible Trip: {first_acc.get('duration_minutes')} mins | Step-free: {first_acc.get('is_wheelchair_accessible')} ({first_acc.get('accessibility_notes')})")
+    except Exception as e:
+        print(f"  Error querying station accessibility: {e}")
     print()
 
     print("=" * 68)

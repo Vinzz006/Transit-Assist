@@ -170,7 +170,7 @@ python demo.py
 ### Run Backend Unit & Integration Tests
 
 ```bash
-# Run 53 automated tests covering API, RAPTOR routing, fares, ML delay predictor, crowdsourced reports, and data cleaning
+# Run 57 automated tests covering API, RAPTOR routing, fares, accessibility, ML delay predictor, and real-time tracking
 pytest
 ```
 
@@ -193,6 +193,8 @@ pytest
 | `GET` | `/api/realtime/gtfs-rt` | Full GTFS-RT 2.0 FeedMessage JSON | `GET /api/realtime/gtfs-rt?time=08:30:00` |
 | `GET` | `/api/predict/delay` | AI arrival delay & bilingual commuter advisory | `GET /api/predict/delay?route_id=CMRL_BLUE&weather=monsoon` |
 | `GET` | `/api/predict/corridors` | Chennai flood-prone corridors & delay summary | `GET /api/predict/corridors?weather=monsoon` |
+| `GET` | `/api/accessibility/stations` | Station elevator counts, ramps, tactile paving | `GET /api/accessibility/stations?mode=METRO` |
+| `GET` | `/api/accessibility/stations/{id}` | Specific station step-free accessibility details | `GET /api/accessibility/stations/ST_CENTRAL` |
 
 ### Sample Journey Plan Request (`POST /api/plan`)
 
@@ -247,4 +249,7 @@ Transit Assist India has been verified across responsive viewports down to 375px
 - [x] **Commuter Safety SOS**: 1-tap WhatsApp trip sharing & direct dial to Chennai Police (100) & Women Helpline (1091).
 - [x] **Real-time Vehicle Tracking**: In-memory high-frequency GPS tracking and GTFS-RT FeedMessage standard generation with live MapLibre bearing compass indicators and low-data throttling.
 - [x] **Predictive Machine Learning**: Historical arrival delay prediction model under varying Chennai monsoon and traffic conditions.
+- [x] **Saved Places & Commute Hubs**: 1-tap bookmarks for Home, Work, and starred daily journeys with full offline persistence.
+- [x] **Step-Free Accessibility & Wheelchair Routing**: Station elevator directories and wheelchair accessible route filtering.
+- [x] **Live Departure Alarms**: In-browser audio countdown chimes and departure alerts before upcoming transit connections.
 

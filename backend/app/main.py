@@ -17,6 +17,7 @@ from backend.app.api.routes import router as routes_router
 from backend.app.api.reports import router as reports_router
 from backend.app.api.realtime import router as realtime_router
 from backend.app.api.predict import router as predict_router
+from backend.app.api.accessibility import router as accessibility_router
 
 # Ensure tables are created if not present
 Base.metadata.create_all(bind=engine)
@@ -54,6 +55,7 @@ app.include_router(routes_router)
 app.include_router(reports_router)
 app.include_router(realtime_router)
 app.include_router(predict_router)
+app.include_router(accessibility_router)
 
 @app.get("/api/health", tags=["Health"])
 def health_check(db: Session = Depends(get_db)):

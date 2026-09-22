@@ -23,6 +23,7 @@
   "filters": {
     "departure_time": "Departure Time",
     "women_fare_scheme": "Vidiyal Payanam (Women Free Travel)",
+    "wheelchair_accessible": "Wheelchair & Step-Free Access",
     "low_data_mode": "Low-Data Mode",
     "low_data_desc": "Saves mobile data, loads fast list view without map tiles",
     "offline_notice": "Offline mode active — using cached schedules",
@@ -157,5 +158,43 @@
     "delay": "delay",
     "on_time": "On Time",
     "waterlogging": "Waterlogging Risk"
+  },
+  "saved": {
+    "title": "Saved Places & Commute Hubs",
+    "subtitle": "1-tap quick routes & offline transit bookmarks",
+    "add_place": "Add Place",
+    "new_place_title": "Save a Frequent Destination",
+    "home": "Home",
+    "work": "Work",
+    "college": "College",
+    "favorite": "Star",
+    "place_name_placeholder": "Place name (e.g. My Flat, Anna Univ)",
+    "search_stop_placeholder": "Search nearest stop or hub...",
+    "save_btn": "Save Place",
+    "your_places": "Your Saved Hubs",
+    "to": "To",
+    "from": "From",
+    "bookmarked_trips": "Starred Itineraries",
+    "no_bookmarks": "Star any route in the planner to save it here for offline reference.",
+    "view_trip": "View Trip on Map",
+    "saved": "Saved",
+    "save": "Save"
+  },
+  "alerts": {
+    "title": "Departure Reminder",
+    "btn": "Alert",
+    "departure_time": "Departure Time:",
+    "boarding_line": "Boarding Line:",
+    "time_to_depart": "Time to head to the station!",
+    "active_countdown": "Alert countdown active",
+    "remind_me": "Remind me before departure:",
+    "test_chime": "Test Chime",
+    "cancel_alert": "Cancel Alert",
+    "set_alert": "Set Alert"
+  },
+  "accessibility": {
+    "step_free": "Step-Free Access",
+    "view_directory": "Chennai Step-Free Stations Directory",
+    "elevators": "Dual elevators & ramps"
   }
 }

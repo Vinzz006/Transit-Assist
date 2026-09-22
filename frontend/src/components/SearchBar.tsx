@@ -11,6 +11,7 @@ interface SearchBarProps {
     isFemale: boolean;
     preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
     weather?: "clear" | "rain" | "monsoon";
+    wheelchairAccessible?: boolean;
   }) => void;
   isFemalePref: boolean;
   onToggleFemale: (val: boolean) => void;
@@ -18,6 +19,8 @@ interface SearchBarProps {
   onPreferenceChange?: (pref: "fastest" | "fewest_transfers" | "least_walking" | "cheapest") => void;
   currentWeather?: "clear" | "rain" | "monsoon";
   onWeatherChange?: (weather: "clear" | "rain" | "monsoon") => void;
+  wheelchairPref?: boolean;
+  onToggleWheelchair?: (val: boolean) => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -28,10 +31,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onPreferenceChange,
   currentWeather = "clear",
   onWeatherChange,
+  wheelchairPref = false,
+  onToggleWheelchair,
 }) => {
   const { t, i18n } = useTranslation();
   const [preference, setPreference] = useState<"fastest" | "fewest_transfers" | "least_walking" | "cheapest">(currentPreference);
   const [weather, setWeather] = useState<"clear" | "rain" | "monsoon">(currentWeather);
+  const [wheelchair, setWheelchair] = useState<boolean>(wheelchairPref);
 
   useEffect(() => {
     if (currentPreference && currentPreference !== preference) {
@@ -44,6 +50,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       setWeather(currentWeather);
     }
   }, [currentWeather]);
+
+  useEffect(() => {
+    setWheelchair(wheelchairPref);
+  }, [wheelchairPref]);
 
   const [originText, setOriginText] = useState("Chennai Central");
   const [originCoord, setOriginCoord] = useState<{ lat: number; lon: number; name: string } | null>({
@@ -191,6 +201,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       isFemale: isFemalePref,
       preference,
       weather,
+      wheelchairAccessible: wheelchair,
     });
   };
 
@@ -328,6 +339,33 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             type="checkbox"
             checked={isFemalePref}
             onChange={(e) => onToggleFemale(e.target.checked)}
+          />
+          <span className="slider"></span>
+        </label>
+      </div>
+
+      {/* Wheelchair & Step-Free Accessibility Toggle */}
+      <div className="toggle-row">
+        <span>♿ {t("filters.wheelchair_accessible", "Wheelchair & Step-Free Access")}</span>
+        <label className="switch">
+          <input
+            type="checkbox"
+            checked={wheelchair}
+            onChange={(e) => {
+              const val = e.target.checked;
+              setWheelchair(val);
+              if (onToggleWheelchair) onToggleWheelchair(val);
+              if (originCoord && destCoord) {
+                onSearch({
+                  origin: originCoord,
+                  destination: destCoord,
+                  isFemale: isFemalePref,
+                  preference,
+                  weather,
+                  wheelchairAccessible: val,
+                });
+              }
+            }}
           />
           <span className="slider"></span>
         </label>

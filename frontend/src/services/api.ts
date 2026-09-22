@@ -12,6 +12,7 @@ import type {
   TripUpdate,
   DelayPrediction,
   CorridorRiskItem,
+  StationAccessibility,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -122,6 +123,13 @@ export const api = {
     if (weather) q.append("weather", weather);
     const qs = q.toString();
     return fetchJson<{ weather: string; active_corridors_count: number; corridors: CorridorRiskItem[] }>(`${API_BASE_URL}/api/predict/corridors${qs ? `?${qs}` : ""}`);
+  },
+
+  getAccessibleStations: (mode?: string): Promise<StationAccessibility[]> => {
+    const q = new URLSearchParams();
+    if (mode) q.append("mode", mode);
+    const qs = q.toString();
+    return fetchJson<StationAccessibility[]>(`${API_BASE_URL}/api/accessibility/stations${qs ? `?${qs}` : ""}`);
   },
 };
 

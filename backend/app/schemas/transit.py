@@ -15,6 +15,7 @@ class StopBase(BaseModel):
     stop_lat: float
     stop_lon: float
     distance_meters: Optional[float] = None
+    wheelchair_boarding: Optional[int] = 1
 
 class StopDetail(StopBase):
     stop_desc: Optional[str] = None
@@ -95,6 +96,8 @@ class TransitLeg(BaseModel):
     weather_risk: Optional[str] = None
     advisory_en: Optional[str] = None
     advisory_ta: Optional[str] = None
+    is_wheelchair_accessible: bool = False
+    accessibility_notes: Optional[str] = None
 
 class Itinerary(BaseModel):
     itinerary_id: str
@@ -111,6 +114,8 @@ class Itinerary(BaseModel):
     predicted_delay_minutes: int = 0
     weather_condition: Optional[str] = "clear"
     monsoon_warning: Optional[str] = None
+    is_wheelchair_accessible: bool = False
+    accessibility_notes: Optional[str] = None
 
 class TripPlanRequest(BaseModel):
     origin_lat: float = Field(..., ge=-90, le=90)
@@ -124,6 +129,7 @@ class TripPlanRequest(BaseModel):
     preference: str = "fastest"  # "fastest", "fewest_transfers", "least_walking", "cheapest"
     allow_auto: bool = True
     weather: Optional[str] = "clear"  # "clear", "rain", "monsoon"
+    wheelchair_accessible: bool = False
 
 class TripPlanResponse(BaseModel):
     origin: Dict[str, Any]

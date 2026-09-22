@@ -57,6 +57,46 @@ def plan_journey(request: TripPlanRequest):
             itin.predicted_delay_minutes = total_delay
             itin.monsoon_warning = monsoon_alert
 
+            # Evaluate Wheelchair Accessibility
+            # CMRL Metro stations are 100% accessible with dual elevators, level boarding, and tactile pavers
+            all_legs_accessible = True
+            has_metro = False
+            for leg in itin.legs:
+                if leg.mode == "METRO":
+                    leg.is_wheelchair_accessible = True
+                    leg.accessibility_notes = "Elevators, escalators & level platform boarding"
+                    has_metro = True
+                elif leg.mode in ("AUTO", "TAXI"):
+                    leg.is_wheelchair_accessible = True
+                    leg.accessibility_notes = "Curb-to-curb direct vehicle transfer"
+                elif leg.mode == "WALK":
+                    leg.is_wheelchair_accessible = leg.distance_meters <= 800
+                    leg.accessibility_notes = "Paved street pedestrian access"
+                elif leg.mode == "BUS":
+                    # MTC AC / modern low-floor buses (e.g. 29C, 18A)
+                    is_lowfloor = any(k in (leg.route_short_name or "") for k in ("29C", "18A", "MTC"))
+                    leg.is_wheelchair_accessible = is_lowfloor
+                    leg.accessibility_notes = "Low-floor boarding entrance" if is_lowfloor else "High-step entry (assistance advised)"
+                else:
+                    leg.is_wheelchair_accessible = True
+
+                if not leg.is_wheelchair_accessible:
+                    all_legs_accessible = False
+
+            itin.is_wheelchair_accessible = all_legs_accessible
+            if has_metro and all_legs_accessible:
+                itin.accessibility_notes = "100% Step-Free Route (CMRL Elevators & Station Ramps)"
+            elif all_legs_accessible:
+                itin.accessibility_notes = "Wheelchair Accessible Journey"
+            else:
+                itin.accessibility_notes = "Standard Transit Access (Steps on bus/rail)"
+
+        # If user explicitly requested wheelchair-accessible routes, prioritize accessible itineraries first
+        if request.wheelchair_accessible:
+            resp.itineraries.sort(
+                key=lambda it: (0 if it.is_wheelchair_accessible else 1, it.duration_minutes)
+            )
+
         return resp
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Journey planning failed: {str(e)}")

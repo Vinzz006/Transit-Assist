@@ -93,6 +93,8 @@ export interface TransitLeg {
   weather_risk?: string;
   advisory_en?: string;
   advisory_ta?: string;
+  is_wheelchair_accessible?: boolean;
+  accessibility_notes?: string;
 }
 
 export interface Itinerary {
@@ -110,6 +112,8 @@ export interface Itinerary {
   predicted_delay_minutes?: number;
   weather_condition?: "clear" | "rain" | "monsoon";
   monsoon_warning?: string;
+  is_wheelchair_accessible?: boolean;
+  accessibility_notes?: string;
 }
 
 export interface TripPlanRequest {
@@ -124,6 +128,7 @@ export interface TripPlanRequest {
   preference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
   allow_auto?: boolean;
   weather?: "clear" | "rain" | "monsoon";
+  wheelchair_accessible?: boolean;
 }
 
 export interface TripPlanResponse {
@@ -229,5 +234,32 @@ export interface CorridorRiskItem {
   monsoon_delay_min: number;
   advice_en: string;
   advice_ta: string;
+}
+
+export interface SavedPlace {
+  id: string;
+  label: "home" | "work" | "college" | "favorite" | "custom";
+  name: string;
+  lat: number;
+  lon: number;
+  address?: string;
+  stop_id?: string;
+  created_at: number;
+}
+
+export interface StationAccessibility {
+  stop_id: string;
+  station_name: string;
+  station_name_ta: string;
+  mode: "METRO" | "SUBURBAN_RAIL" | "BUS";
+  has_elevators: boolean;
+  has_escalators: boolean;
+  has_wheelchair_ramp: boolean;
+  has_tactile_paths: boolean;
+  has_accessible_restrooms: boolean;
+  elevator_count: number;
+  accessibility_level: "FULL" | "PARTIAL" | "LIMITED";
+  notes_en: string;
+  notes_ta: string;
 }
 
