@@ -170,7 +170,7 @@ python demo.py
 ### Run Backend Unit & Integration Tests
 
 ```bash
-# Run 31 automated tests covering API, RAPTOR routing, fares, crowdsourced reports, and data cleaning
+# Run 53 automated tests covering API, RAPTOR routing, fares, ML delay predictor, crowdsourced reports, and data cleaning
 pytest
 ```
 
@@ -191,6 +191,8 @@ pytest
 | `GET` | `/api/realtime/vehicles` | Real-time active vehicle positions & bearing | `GET /api/realtime/vehicles?time=08:30:00` |
 | `GET` | `/api/realtime/trip-updates` | Real-time GTFS-RT trip delays & stop updates | `GET /api/realtime/trip-updates?time=08:30:00` |
 | `GET` | `/api/realtime/gtfs-rt` | Full GTFS-RT 2.0 FeedMessage JSON | `GET /api/realtime/gtfs-rt?time=08:30:00` |
+| `GET` | `/api/predict/delay` | AI arrival delay & bilingual commuter advisory | `GET /api/predict/delay?route_id=CMRL_BLUE&weather=monsoon` |
+| `GET` | `/api/predict/corridors` | Chennai flood-prone corridors & delay summary | `GET /api/predict/corridors?weather=monsoon` |
 
 ### Sample Journey Plan Request (`POST /api/plan`)
 
@@ -244,5 +246,5 @@ Transit Assist India has been verified across responsive viewports down to 375px
 - [x] **Voice Search**: Speech recognition for commuters speaking Tamil or Indian English.
 - [x] **Commuter Safety SOS**: 1-tap WhatsApp trip sharing & direct dial to Chennai Police (100) & Women Helpline (1091).
 - [x] **Real-time Vehicle Tracking**: In-memory high-frequency GPS tracking and GTFS-RT FeedMessage standard generation with live MapLibre bearing compass indicators and low-data throttling.
-- [ ] **Predictive Machine Learning**: Historical arrival delay prediction model under varying Chennai monsoon and traffic conditions.
+- [x] **Predictive Machine Learning**: Historical arrival delay prediction model under varying Chennai monsoon and traffic conditions.
 

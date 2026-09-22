@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Train, Bus, Users } from "lucide-react";
-import type { RouteSummary, RouteCrowdSummary } from "../types";
+import { Train, Bus, Users, Clock, AlertTriangle, ShieldCheck } from "lucide-react";
+import type { RouteSummary, RouteCrowdSummary, DelayPrediction } from "../types";
 import { api } from "../services/api";
 
 interface RouteDetailProps {
@@ -9,11 +9,12 @@ interface RouteDetailProps {
 }
 
 export const RouteDetail: React.FC<RouteDetailProps> = ({ onOpenReportModal }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [routes, setRoutes] = useState<RouteSummary[]>([]);
   const [selectedRouteId, setSelectedRouteId] = useState<string>("CMRL_BLUE");
   const [routeDetail, setRouteDetail] = useState<any>(null);
   const [crowdSummary, setCrowdSummary] = useState<RouteCrowdSummary | null>(null);
+  const [delayPrediction, setDelayPrediction] = useState<DelayPrediction | null>(null);
   const [direction, setDirection] = useState<0 | 1>(0);
   const [loading, setLoading] = useState(false);
 
@@ -37,6 +38,12 @@ export const RouteDetail: React.FC<RouteDetailProps> = ({ onOpenReportModal }) =
         .getRouteCrowdSummary(selectedRouteId)
         .then(setCrowdSummary)
         .catch(() => setCrowdSummary(null));
+
+      // Fetch AI delay & corridor risk prediction
+      api
+        .predictDelay({ route_id: selectedRouteId })
+        .then(setDelayPrediction)
+        .catch(() => setDelayPrediction(null));
     }
   }, [selectedRouteId]);
 
@@ -135,6 +142,47 @@ export const RouteDetail: React.FC<RouteDetailProps> = ({ onOpenReportModal }) =
             <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "2px" }}>
               {t("routes_view.agency")}: {routeDetail.agency_id} &bull; {t("routes_view.mode")}: {routeDetail.mode}
             </div>
+
+            {/* AI Delay Prediction & Corridor Risk */}
+            {delayPrediction && (
+              <div
+                style={{
+                  margin: "8px 0 2px 0",
+                  padding: "8px 10px",
+                  backgroundColor: delayPrediction.risk_level === "HIGH" ? "rgba(239, 68, 68, 0.12)" : "var(--bg-surface)",
+                  border: delayPrediction.risk_level === "HIGH" ? "1px solid rgba(239, 68, 68, 0.3)" : "1px solid var(--border-color)",
+                  borderRadius: "var(--radius-md)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    {delayPrediction.predicted_delay_minutes > 0 ? (
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#F59E0B", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                        <Clock size={12} /> +{delayPrediction.predicted_delay_minutes}m {t("predict.delay", "delay")}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#10B981", display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                        <ShieldCheck size={12} /> {t("predict.on_time", "On Time")}
+                      </span>
+                    )}
+                    <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                      ({Math.round(delayPrediction.confidence_score * 100)}% AI confidence)
+                    </span>
+                  </div>
+                  {delayPrediction.is_waterlogging_prone && (
+                    <span style={{ fontSize: "10px", color: "#EF4444", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                      <AlertTriangle size={11} /> {t("predict.waterlogging", "Waterlogging Risk")}
+                    </span>
+                  )}
+                </div>
+                <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.3 }}>
+                  {i18n.language === "ta" && delayPrediction.advisory_ta ? delayPrediction.advisory_ta : delayPrediction.advisory_en}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Direction toggle */}

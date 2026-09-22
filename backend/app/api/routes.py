@@ -93,7 +93,7 @@ def get_route_details(route_id: str, db: Session = Depends(get_db)):
         "route_short_name": route.route_short_name,
         "route_long_name": route.route_long_name,
         "route_type": route.route_type,
-        "mode": "METRO" if route.route_type in (1, 2) else "BUS",
+        "mode": "METRO" if route.route_type == 1 else "SUBURBAN_RAIL" if route.route_type == 2 else "BUS",
         "route_color": route.route_color or "0066CC",
         "route_text_color": route.route_text_color or "FFFFFF",
         "polyline": polyline,

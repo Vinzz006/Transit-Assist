@@ -16,6 +16,8 @@ interface SearchBarProps {
   onToggleFemale: (val: boolean) => void;
   currentPreference?: "fastest" | "fewest_transfers" | "least_walking" | "cheapest";
   onPreferenceChange?: (pref: "fastest" | "fewest_transfers" | "least_walking" | "cheapest") => void;
+  currentWeather?: "clear" | "rain" | "monsoon";
+  onWeatherChange?: (weather: "clear" | "rain" | "monsoon") => void;
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
@@ -24,10 +26,24 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onToggleFemale,
   currentPreference = "fastest",
   onPreferenceChange,
+  currentWeather = "clear",
+  onWeatherChange,
 }) => {
   const { t, i18n } = useTranslation();
   const [preference, setPreference] = useState<"fastest" | "fewest_transfers" | "least_walking" | "cheapest">(currentPreference);
-  const [weather, setWeather] = useState<"clear" | "rain" | "monsoon">("clear");
+  const [weather, setWeather] = useState<"clear" | "rain" | "monsoon">(currentWeather);
+
+  useEffect(() => {
+    if (currentPreference && currentPreference !== preference) {
+      setPreference(currentPreference);
+    }
+  }, [currentPreference]);
+
+  useEffect(() => {
+    if (currentWeather && currentWeather !== weather) {
+      setWeather(currentWeather);
+    }
+  }, [currentWeather]);
 
   const [originText, setOriginText] = useState("Chennai Central");
   const [originCoord, setOriginCoord] = useState<{ lat: number; lon: number; name: string } | null>({
@@ -379,7 +395,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 cursor: "pointer",
                 fontWeight: weather === w.id ? 700 : 400,
               }}
-              onClick={() => setWeather(w.id as any)}
+              onClick={() => {
+                const nextWeather = w.id as "clear" | "rain" | "monsoon";
+                setWeather(nextWeather);
+                if (onWeatherChange) onWeatherChange(nextWeather);
+                if (originCoord && destCoord) {
+                  onSearch({
+                    origin: originCoord,
+                    destination: destCoord,
+                    isFemale: isFemalePref,
+                    preference,
+                    weather: nextWeather,
+                  });
+                }
+              }}
             >
               {w.icon}
               <span>{w.label}</span>

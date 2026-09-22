@@ -48,7 +48,7 @@ def main():
     print()
 
     # 1. Health check
-    print("[1/5] Checking Backend Health & Network Status...")
+    print("[1/7] Checking Backend Health & Network Status...")
     try:
         health = get(f"{BASE_URL}/api/health")
         print(f"  Status:         {health.get('status', 'unknown')}")
@@ -63,7 +63,7 @@ def main():
     print()
 
     # 2. Bilingual Search
-    print("[2/5] Testing Bilingual Stop Autocomplete (English & Tamil)...")
+    print("[2/7] Testing Bilingual Stop Autocomplete (English & Tamil)...")
     try:
         stops_en = get(f"{BASE_URL}/api/stops?query=Central&limit=2")
         print("  Query 'Central' (English):")
@@ -80,7 +80,7 @@ def main():
     print()
 
     # 3. Spatial Nearby Stops
-    print("[3/5] Testing Spatial Geodesic Nearby Stops (Chennai Central)...")
+    print("[3/7] Testing Spatial Geodesic Nearby Stops (Chennai Central)...")
     try:
         nearby = get(f"{BASE_URL}/api/stops/nearby?lat=13.0827&lon=80.2754&radius=1000&limit=3")
         for s in nearby:
@@ -91,7 +91,7 @@ def main():
     print()
 
     # 4. Multi-Leg Transit Planning & Indian Fares
-    print("[4/5] Planning Journey: Chennai Central -> Chennai Airport (at 08:30 AM)...")
+    print("[4/7] Planning Journey: Chennai Central -> Chennai Airport (at 08:30 AM)...")
     plan_data = {
         "origin_lat": 13.0827,
         "origin_lon": 80.2754,
@@ -133,7 +133,7 @@ def main():
     print()
 
     # 5. Scheduled Arrivals
-    print("[5/6] Checking Upcoming Scheduled Arrivals at Chennai Central...")
+    print("[5/7] Checking Upcoming Scheduled Arrivals at Chennai Central...")
     try:
         arrivals = get(f"{BASE_URL}/api/arrivals?stop_id=ST_CENTRAL&limit=3")
         for arr in arrivals:
@@ -143,7 +143,7 @@ def main():
     print()
 
     # 6. Real-Time Vehicle Tracking & GTFS-RT
-    print("[6/6] Testing Live Vehicle Tracking & GTFS-RT Feed (08:30 AM Peak)...")
+    print("[6/7] Testing Live Vehicle Tracking & GTFS-RT Feed (08:30 AM Peak)...")
     try:
         vehicles = get(f"{BASE_URL}/api/realtime/vehicles?time=08:30:00")
         print(f"  Active vehicles tracked: {len(vehicles)}")
@@ -156,6 +156,31 @@ def main():
         print(f"  GTFS-RT Feed Version: {feed.get('header', {}).get('gtfs_realtime_version')}, Entities: {len(feed.get('entity', []))}")
     except Exception as e:
         print(f"  Error querying real-time tracking: {e}")
+    print()
+
+    # 7. Predictive Delay & Monsoon Intelligence
+    print("[7/7] Testing Predictive AI Delay & Monsoon Corridor Intelligence...")
+    try:
+        # Check Metro resilience during monsoon
+        metro_pred = get(f"{BASE_URL}/api/predict/delay?route_id=CMRL_BLUE&weather=monsoon")
+        print(f"  Metro Line {metro_pred.get('route_short_name')} during Monsoon:")
+        print(f"   • Predicted Delay: +{metro_pred.get('predicted_delay_minutes')} mins | Risk: {metro_pred.get('risk_level')} | Confidence: {int(metro_pred.get('confidence_score', 0)*100)}%")
+        print(f"   • Advisory (EN):   {metro_pred.get('advisory_en')}")
+
+        # Check Bus flood risk on Velachery waterlogging corridor
+        bus_pred = get(f"{BASE_URL}/api/predict/delay?route_id=MTC_11G&weather=monsoon")
+        print(f"  MTC Bus Line {bus_pred.get('route_short_name')} on {bus_pred.get('corridor_name')} Corridor during Monsoon:")
+        print(f"   • Predicted Delay: +{bus_pred.get('predicted_delay_minutes')} mins | Risk: {bus_pred.get('risk_level')} | Waterlogging Prone: {bus_pred.get('is_waterlogging_prone')}")
+        print(f"   • Advisory (EN):   {bus_pred.get('advisory_en')}")
+        print(f"   • Advisory (TA):   {bus_pred.get('advisory_ta')}")
+
+        # Summary of active corridors
+        corridors_resp = get(f"{BASE_URL}/api/predict/corridors?weather=monsoon")
+        print(f"  Active Monitored Corridors ({corridors_resp.get('active_corridors_count')} monitored):")
+        for c in corridors_resp.get("corridors", [])[:3]:
+            print(f"   • {c.get('corridor_name')}: Peak delay +{c.get('monsoon_delay_min')}m | Flood Risk: {c.get('waterlogging_risk')}")
+    except Exception as e:
+        print(f"  Error querying predictive delay intelligence: {e}")
     print()
 
     print("=" * 68)

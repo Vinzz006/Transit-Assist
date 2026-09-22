@@ -36,6 +36,7 @@ export const App: React.FC = () => {
   const [isFemalePref, setIsFemalePref] = useState(prefs.isFemale);
   const [lowDataMode, setLowDataMode] = useState(prefs.lowDataMode);
   const [currentPreference, setCurrentPreference] = useState<"fastest" | "fewest_transfers" | "least_walking" | "cheapest">("fastest");
+  const [weather, setWeather] = useState<"clear" | "rain" | "monsoon">("clear");
 
   const [itineraries, setItineraries] = useState<Itinerary[]>([]);
   const [selectedItinIndex, setSelectedItinIndex] = useState<number>(0);
@@ -76,7 +77,9 @@ export const App: React.FC = () => {
     weather?: "clear" | "rain" | "monsoon";
   }) => {
     const pref = params.preference || currentPreference;
+    const currentW = params.weather || weather;
     setCurrentPreference(pref);
+    setWeather(currentW);
     setLoading(true);
     setOrigin(params.origin);
     setDestination(params.destination);
@@ -91,7 +94,7 @@ export const App: React.FC = () => {
         is_female: params.isFemale,
         preference: pref,
         allow_auto: true,
-        weather: params.weather || "clear",
+        weather: currentW,
       })
       .then((res: TripPlanResponse) => {
         setItineraries(res.itineraries);
@@ -196,6 +199,17 @@ export const App: React.FC = () => {
                     destination,
                     isFemale: isFemalePref,
                     preference: p,
+                    weather,
+                  });
+                }}
+                currentWeather={weather}
+                onWeatherChange={(w) => {
+                  handlePlanJourney({
+                    origin,
+                    destination,
+                    isFemale: isFemalePref,
+                    preference: currentPreference,
+                    weather: w,
                   });
                 }}
               />
