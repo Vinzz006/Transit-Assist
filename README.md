@@ -252,4 +252,23 @@ Transit Assist India has been verified across responsive viewports down to 375px
 - [x] **Saved Places & Commute Hubs**: 1-tap bookmarks for Home, Work, and starred daily journeys with full offline persistence.
 - [x] **Step-Free Accessibility & Wheelchair Routing**: Station elevator directories and wheelchair accessible route filtering.
 - [x] **Live Departure Alarms**: In-browser audio countdown chimes and departure alerts before upcoming transit connections.
+- [x] **Admin Transit Operations Center & Live Disruption Broadcasting**: Network telemetry console, multi-mode fleet trackers, OTP punctuality gauges, and real-time incident broadcaster alerting commuter PWAs.
+
+---
+
+## 🧪 Comprehensive Automated Test Suite (61 Tests)
+
+```bash
+pytest backend/tests/
+# ======================== 61 passed, 1 warning in 3.27s ========================
+```
+- `test_accessibility_and_saved.py` (Phase 11): Step-free stations directory, wheelchair routing, saved hubs.
+- `test_admin_dashboard.py` (Phase 12): Operations metrics, fleet telemetry, incident broadcasting & resolution.
+- `test_ml_predictor.py` (Phase 10): Delay prediction & monsoon corridor intelligence.
+- `test_realtime.py` (Phase 9): Vehicle simulation & GTFS-RT feed generation.
+- `test_fares.py`: MTC stage fares, CMRL distance slabs, Vidiyal Payanam, digital discounts.
+- `test_multimodal.py`: RAPTOR transfers, suburban rail, multimodal routing.
+- `test_routing.py`: Earliest arrival, transfer minimizer, Pareto exploration.
+- `test_api.py`: REST endpoint verification, GZip compression, health check.
+- `test_data_cleaning.py`: GTFS ingestion & data normalization.
 

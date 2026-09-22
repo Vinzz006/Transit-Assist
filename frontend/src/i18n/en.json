@@ -196,5 +196,21 @@
     "step_free": "Step-Free Access",
     "view_directory": "Chennai Step-Free Stations Directory",
     "elevators": "Dual elevators & ramps"
+  },
+  "admin": {
+    "title": "Transit Operations Control Center",
+    "subtitle": "Chennai Metropolitan Network Telemetry & Disruption Management",
+    "ops_button": "Transit Operations Center",
+    "tab_overview": "Network Health & Fleet",
+    "tab_incidents": "Disruption Broadcasting",
+    "tab_reports": "Ground Commuter Reports",
+    "active_vehicles": "Active Fleet",
+    "overall_otp": "On-Time Performance",
+    "network_scope": "Network Coverage",
+    "flood_risk": "Monsoon Waterlogging",
+    "mode_punctuality": "Modewise Punctuality & Fleet Health",
+    "broadcast_title": "Broadcast New Transit Advisory or Disruption",
+    "broadcast_success": "Disruption alert broadcast to all active commuter apps successfully!",
+    "view": "View"
   }
 }

@@ -13,9 +13,10 @@ import { SafetyShareModal } from "./components/SafetyShareModal";
 import { CrowdReportModal } from "./components/CrowdReportModal";
 import { SavedPlaces } from "./components/SavedPlaces";
 import { DepartureAlertModal } from "./components/DepartureAlertModal";
-import { ShieldAlert, Bookmark } from "lucide-react";
+import { AdminDashboardModal } from "./components/AdminDashboardModal";
+import { ShieldAlert, Bookmark, Radio } from "lucide-react";
 
-import type { Itinerary, StopBase, TripPlanResponse } from "./types";
+import type { Itinerary, StopBase, TripPlanResponse, TransitIncident } from "./types";
 import { api } from "./services/api";
 import { cache } from "./services/cache";
 
@@ -47,12 +48,15 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Phase 8 & 11 Modals
+  // Phase 8, 11 & 12 Modals
   const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
   const [crowdModalRoute, setCrowdModalRoute] = useState<{ id: string; name: string } | null>(null);
   const [alertModalItin, setAlertModalItin] = useState<Itinerary | null>(null);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [activeIncidents, setActiveIncidents] = useState<TransitIncident[]>([]);
+  const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
 
-  // Initial load: Fetch nearby stops and seed initial plan
+  // Initial load: Fetch nearby stops, active disruptions, and seed initial plan
   useEffect(() => {
     // 1. Fetch nearby stops around Chennai Central
     api
@@ -60,15 +64,21 @@ export const App: React.FC = () => {
       .then(setNearbyStops)
       .catch(() => {});
 
-    // 2. Cache stops in background for offline use
+    // 2. Fetch active transit disruptions
+    api
+      .getAdminIncidents(true)
+      .then(setActiveIncidents)
+      .catch(() => {});
+
+    // 3. Cache stops in background for offline use
     api.searchStops("", 100).then((allStops) => {
       cache.cacheStops(allStops);
     }).catch(() => {});
 
-    // 3. Load bookmarked itineraries
+    // 4. Load bookmarked itineraries
     setBookmarkedIds(cache.getBookmarkedItineraries().map((it) => it.itinerary_id));
 
-    // 4. Trigger initial journey search
+    // 5. Trigger initial journey search
     handlePlanJourney({
       origin: { lat: 13.0827, lon: 80.2754, name: "Chennai Central" },
       destination: { lat: 12.9780, lon: 80.1640, name: "Chennai Airport" },
@@ -147,6 +157,28 @@ export const App: React.FC = () => {
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <button
               type="button"
+              className="btn-ops"
+              onClick={() => setIsAdminModalOpen(true)}
+              title={t("admin.ops_button", "Transit Operations Control Center")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                backgroundColor: "rgba(59, 130, 246, 0.15)",
+                border: "1px solid rgba(59, 130, 246, 0.35)",
+                borderRadius: "6px",
+                padding: "6px 10px",
+                color: "#60A5FA",
+                fontSize: "12px",
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              <Radio size={13} />
+              <span>Ops</span>
+            </button>
+            <button
+              type="button"
               className="btn-sos"
               onClick={() => setIsSafetyModalOpen(true)}
               title={t("safety.title", "Emergency SOS & Helplines")}
@@ -157,6 +189,67 @@ export const App: React.FC = () => {
             <LanguageSwitcher />
           </div>
         </header>
+
+        {/* Active Disruption Alert Banner */}
+        {activeIncidents.length > 0 && !dismissedAlerts.includes(activeIncidents[0].id) && (
+          <div
+            style={{
+              backgroundColor: "rgba(239, 68, 68, 0.16)",
+              borderBottom: "1px solid rgba(239, 68, 68, 0.3)",
+              padding: "8px 12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              color: "#FECACA",
+              fontSize: "12px",
+              lineHeight: 1.3,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+              <ShieldAlert size={15} color="#EF4444" style={{ flexShrink: 0 }} />
+              <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <strong style={{ color: "#fff", marginRight: "4px" }}>
+                  [{activeIncidents[0].mode}] {activeIncidents[0].title}:
+                </strong>
+                <span>{activeIncidents[0].description}</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, marginLeft: "8px" }}>
+              <button
+                type="button"
+                onClick={() => setIsAdminModalOpen(true)}
+                style={{
+                  background: "rgba(239, 68, 68, 0.3)",
+                  border: "1px solid rgba(239, 68, 68, 0.5)",
+                  borderRadius: "4px",
+                  color: "#fff",
+                  fontSize: "10px",
+                  padding: "2px 6px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                {t("admin.view", "View")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDismissedAlerts((prev) => [...prev, activeIncidents[0].id])}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#FCA5A5",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  padding: "0 2px",
+                  lineHeight: 1,
+                }}
+                title="Dismiss"
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Tabs */}
         <nav className="nav-tabs">
@@ -404,6 +497,13 @@ export const App: React.FC = () => {
           destinationName={destination.name}
         />
       )}
+
+      {/* Admin Operations Control Center Modal */}
+      <AdminDashboardModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        onIncidentsUpdated={(updated) => setActiveIncidents(updated)}
+      />
     </div>
   );
 };

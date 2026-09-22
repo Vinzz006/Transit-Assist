@@ -263,3 +263,41 @@ export interface StationAccessibility {
   notes_ta: string;
 }
 
+export interface AdminMetrics {
+  network_status: "OPTIMAL" | "ELEVATED" | "INCIDENT" | "CRITICAL";
+  city: string;
+  total_stops: number;
+  total_routes: number;
+  active_vehicles_total: number;
+  metro_active: number;
+  suburban_active: number;
+  bus_active: number;
+  overall_otp_pct: number;
+  metro_otp_pct: number;
+  suburban_otp_pct: number;
+  bus_otp_pct: number;
+  crowd_reports_total: number;
+  monsoon_flood_risk: "LOW" | "MODERATE" | "HIGH";
+  timestamp: string;
+}
+
+export interface TransitIncident {
+  id: string;
+  title: string;
+  description: string;
+  mode: "ALL" | "METRO" | "SUBURBAN_RAIL" | "BUS";
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  affected_corridor?: string;
+  is_active: boolean;
+  reported_at: string;
+  resolved_at?: string;
+}
+
+export interface IncidentCreateRequest {
+  title: string;
+  description: string;
+  mode: "ALL" | "METRO" | "SUBURBAN_RAIL" | "BUS";
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  affected_corridor?: string;
+}
+

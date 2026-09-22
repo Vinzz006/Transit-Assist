@@ -159,7 +159,7 @@ def main():
     print()
 
     # 7. Predictive Delay & Monsoon Intelligence
-    print("[7/8] Testing Predictive AI Delay & Monsoon Corridor Intelligence...")
+    print("[7/9] Testing Predictive AI Delay & Monsoon Corridor Intelligence...")
     try:
         # Check Metro resilience during monsoon
         metro_pred = get(f"{BASE_URL}/api/predict/delay?route_id=CMRL_BLUE&weather=monsoon")
@@ -184,7 +184,7 @@ def main():
     print()
 
     # 8. Step-Free Accessibility & Station Facilities
-    print("[8/8] Testing Step-Free Station Accessibility & Wheelchair Transit Routing...")
+    print("[8/9] Testing Step-Free Station Accessibility & Wheelchair Transit Routing...")
     try:
         stations = get(f"{BASE_URL}/api/accessibility/stations")
         print(f"  Monitored Accessible Hubs: {len(stations)} stations cataloged")
@@ -204,6 +204,31 @@ def main():
         print(f"  Wheelchair Accessible Trip: {first_acc.get('duration_minutes')} mins | Step-free: {first_acc.get('is_wheelchair_accessible')} ({first_acc.get('accessibility_notes')})")
     except Exception as e:
         print(f"  Error querying station accessibility: {e}")
+    print()
+
+    # 9. Admin Transit Operations Center & Live Disruption Broadcasting
+    print("[9/9] Testing Admin Transit Operations Center & Live Network Telemetry...")
+    try:
+        metrics = get(f"{BASE_URL}/api/admin/metrics")
+        print(f"  Network Operational Status:  {metrics.get('network_status')} ({metrics.get('city')})")
+        print(f"  Live Active Fleet:           {metrics.get('active_vehicles_total')} vehicles (Metro: {metrics.get('metro_active')}, Suburban: {metrics.get('suburban_active')}, Bus: {metrics.get('bus_active')})")
+        print(f"  Network On-Time Performance: {metrics.get('overall_otp_pct')}% (Metro: {metrics.get('metro_otp_pct')}%, Suburban: {metrics.get('suburban_otp_pct')}%, Bus: {metrics.get('bus_otp_pct')}%)")
+        print(f"  Monsoon Flood Risk Level:    {metrics.get('monsoon_flood_risk')}")
+
+        # Broadcast test incident
+        inc_broadcast = post(f"{BASE_URL}/api/admin/incidents", {
+            "title": "Signal maintenance at Guindy",
+            "description": "Suburban trains operating with 5-10 min delay; CMRL Metro running normally",
+            "mode": "SUBURBAN_RAIL",
+            "severity": "MEDIUM",
+            "affected_corridor": "GST Road Corridor"
+        })
+        print(f"  Broadcasted Disruption:      [{inc_broadcast.get('severity')}] {inc_broadcast.get('title')} (ID: {inc_broadcast.get('id')})")
+
+        incidents = get(f"{BASE_URL}/api/admin/incidents?active_only=true")
+        print(f"  Active Broadcast Alerts:     {len(incidents)} disruption(s) live on commuter network")
+    except Exception as e:
+        print(f"  Error querying admin operations: {e}")
     print()
 
     print("=" * 68)

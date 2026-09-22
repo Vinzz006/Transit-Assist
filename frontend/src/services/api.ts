@@ -13,6 +13,9 @@ import type {
   DelayPrediction,
   CorridorRiskItem,
   StationAccessibility,
+  AdminMetrics,
+  TransitIncident,
+  IncidentCreateRequest,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -130,6 +133,31 @@ export const api = {
     if (mode) q.append("mode", mode);
     const qs = q.toString();
     return fetchJson<StationAccessibility[]>(`${API_BASE_URL}/api/accessibility/stations${qs ? `?${qs}` : ""}`);
+  },
+
+  getAdminMetrics: (): Promise<AdminMetrics> => {
+    return fetchJson<AdminMetrics>(`${API_BASE_URL}/api/admin/metrics`);
+  },
+
+  getAdminIncidents: (activeOnly: boolean = false): Promise<TransitIncident[]> => {
+    return fetchJson<TransitIncident[]>(`${API_BASE_URL}/api/admin/incidents?active_only=${activeOnly}`);
+  },
+
+  broadcastIncident: (req: IncidentCreateRequest): Promise<TransitIncident> => {
+    return fetchJson<TransitIncident>(`${API_BASE_URL}/api/admin/incidents`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  },
+
+  resolveIncident: (incidentId: string): Promise<TransitIncident> => {
+    return fetchJson<TransitIncident>(`${API_BASE_URL}/api/admin/incidents/${encodeURIComponent(incidentId)}/resolve`, {
+      method: "POST",
+    });
+  },
+
+  getAdminReports: (limit: number = 20): Promise<ReportItem[]> => {
+    return fetchJson<ReportItem[]>(`${API_BASE_URL}/api/admin/reports?limit=${limit}`);
   },
 };
 
