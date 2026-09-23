@@ -232,7 +232,7 @@ def main():
     print()
 
     # 10. Singara Chennai NCMC Transit Wallet & QR Boarding Pass
-    print("[10/10] Testing Singara Chennai NCMC Digital Transit Wallet & QR Pass Ticketing...")
+    print("[10/11] Testing Singara Chennai NCMC Digital Transit Wallet & QR Pass Ticketing...")
     try:
         card = get(f"{BASE_URL}/api/wallet/card")
         print(f"  Virtual Transit Smartcard:   {card.get('card_type')} [{card.get('masked_number')}]")
@@ -266,6 +266,43 @@ def main():
             print(f"   • [{tx.get('timestamp')}] {tx.get('description')} ({sign}₹{tx.get('amount')}) -> Bal: ₹{tx.get('balance_after')}")
     except Exception as e:
         print(f"  Error querying digital wallet: {e}")
+    print()
+
+    # 11. Eco-Transit Carbon & Fuel Savings Engine and Commute Pass Optimizer
+    print("[11/11] Testing Eco-Transit Carbon Savings Engine & Monthly Pass Cost Optimizer...")
+    try:
+        eco_comp = post(f"{BASE_URL}/api/eco/compare", {
+            "distance_km": 14.5,
+            "transit_fare": 32.0,
+            "transit_mode": "METRO"
+        })
+        print(f"  Trip Distance:               {eco_comp.get('distance_km')} km (Central -> Airport via CMRL Metro)")
+        print(f"  Net Carbon Avoided:          {eco_comp.get('net_co2_saved_kg')} kg CO2 (vs {eco_comp.get('car_co2_kg')} kg petrol car)")
+        print(f"  Fuel Preserved:              {eco_comp.get('fuel_saved_liters')} Liters of petrol (~₹{eco_comp.get('fuel_cost_saved_inr')} saved)")
+        print(f"  Urban Tree Equivalency:      {eco_comp.get('tree_days_equivalent')} tree-days of carbon absorption")
+
+        # Optimizer
+        opt = post(f"{BASE_URL}/api/eco/optimizer", {
+            "one_way_distance_km": 14.5,
+            "one_way_fare_cash": 40.0,
+            "working_days_per_month": 22,
+            "trips_per_day": 2,
+            "primary_mode": "METRO",
+            "is_female": False
+        })
+        best = opt.get("best_pass", {})
+        print(f"  Optimal Chennai Commute Pass: {best.get('name_en')} (₹{best.get('price_inr')}/month)")
+        print(f"  Monthly Savings vs Cash:     ₹{opt.get('max_savings_vs_cash')} / mo")
+        print(f"  Monthly Savings vs Car:      ₹{opt.get('max_savings_vs_car')} / mo")
+        print(f"  Annual Savings Potential:    ₹{opt.get('annual_savings_potential')} / year")
+        print(f"  Monthly CO2 Avoided:         {opt.get('monthly_co2_avoided_kg')} kg CO2")
+
+        # Profile
+        prof = get(f"{BASE_URL}/api/eco/profile")
+        print(f"  Green Commuter Level:        {prof.get('badge_title_en')} ({prof.get('commuter_level')})")
+        print(f"  Clean Air Points:            {prof.get('cleaner_air_points')} pts | Lifetime CO2 saved: {prof.get('lifetime_co2_saved_kg')} kg")
+    except Exception as e:
+        print(f"  Error querying eco-transit engine: {e}")
     print()
 
     print("=" * 68)

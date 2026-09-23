@@ -21,6 +21,10 @@ import type {
   TicketRequest,
   TransitQRPass,
   WalletTransaction,
+  EcoTripComparison,
+  CommuteOptimizerRequest,
+  CommuteOptimizerResponse,
+  GreenCommuterProfile,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -197,6 +201,29 @@ export const api = {
 
   getActiveTickets: (): Promise<TransitQRPass[]> => {
     return fetchJson<TransitQRPass[]>(`${API_BASE_URL}/api/wallet/tickets/active`);
+  },
+
+  // Phase 14: Eco-Transit Green Commuter & Monthly Pass Optimizer
+  getEcoComparison: (distanceKm: number, transitMode: string = "TRANSIT", fareInr: number = 25.0): Promise<EcoTripComparison> => {
+    return fetchJson<EcoTripComparison>(`${API_BASE_URL}/api/eco/compare`, {
+      method: "POST",
+      body: JSON.stringify({
+        distance_km: distanceKm,
+        transit_mode: transitMode,
+        transit_fare: fareInr,
+      }),
+    });
+  },
+
+  optimizeCommutePasses: (req: CommuteOptimizerRequest): Promise<CommuteOptimizerResponse> => {
+    return fetchJson<CommuteOptimizerResponse>(`${API_BASE_URL}/api/eco/optimizer`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  },
+
+  getEcoProfile: (): Promise<GreenCommuterProfile> => {
+    return fetchJson<GreenCommuterProfile>(`${API_BASE_URL}/api/eco/profile`);
   },
 };
 

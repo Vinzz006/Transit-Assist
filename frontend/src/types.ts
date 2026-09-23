@@ -357,3 +357,81 @@ export interface WalletTransaction {
   balance_after: number;
 }
 
+export interface ModeEcoDetail {
+  mode: string;
+  name: string;
+  co2_grams: number;
+  cost_inr: number;
+  fuel_liters: number;
+}
+
+export interface EcoTripComparison {
+  distance_km: number;
+  transit_mode: string;
+  transit_co2_kg: number;
+  transit_cost_inr: number;
+  car_co2_kg: number;
+  car_cost_inr: number;
+  bike_co2_kg: number;
+  bike_cost_inr: number;
+  auto_cost_inr: number;
+  cab_cost_inr: number;
+  net_co2_saved_kg: number;
+  fuel_saved_liters: number;
+  fuel_cost_saved_inr: number;
+  tree_days_equivalent: number;
+  petrol_price_benchmark: number;
+  modes_breakdown: ModeEcoDetail[];
+}
+
+export interface MonthlyPassOption {
+  pass_id: string;
+  name_en: string;
+  name_ta: string;
+  agency: string;
+  price_inr: number;
+  period: string;
+  description_en: string;
+  description_ta: string;
+  recommended: boolean;
+  monthly_savings_inr: number;
+}
+
+export interface CommuteOptimizerRequest {
+  one_way_distance_km: number;
+  one_way_fare_cash: number;
+  one_way_fare_smartcard?: number;
+  working_days_per_month?: number;
+  trips_per_day?: number;
+  primary_mode?: string;
+  is_female?: boolean;
+}
+
+export interface CommuteOptimizerResponse {
+  total_trips_monthly: number;
+  total_monthly_km: number;
+  cost_cash_tokens: number;
+  cost_smartcard: number;
+  cost_private_car: number;
+  cost_two_wheeler: number;
+  best_pass: MonthlyPassOption;
+  monthly_passes_evaluated: MonthlyPassOption[];
+  max_savings_vs_cash: number;
+  max_savings_vs_car: number;
+  annual_savings_potential: number;
+  monthly_co2_avoided_kg: number;
+  monthly_tree_equivalent: number;
+}
+
+export interface GreenCommuterProfile {
+  commuter_level: string;
+  badge_title_en: string;
+  badge_title_ta: string;
+  lifetime_co2_saved_kg: number;
+  lifetime_fuel_saved_liters: number;
+  lifetime_rupees_saved: number;
+  urban_trees_equivalent: number;
+  cleaner_air_points: number;
+}
+
+

@@ -16,7 +16,8 @@ import { DepartureAlertModal } from "./components/DepartureAlertModal";
 import { AdminDashboardModal } from "./components/AdminDashboardModal";
 import { TransitWalletModal } from "./components/TransitWalletModal";
 import { LiveNavigationModal } from "./components/LiveNavigationModal";
-import { ShieldAlert, Bookmark, Radio, CreditCard } from "lucide-react";
+import { EcoTransitModal } from "./components/EcoTransitModal";
+import { ShieldAlert, Bookmark, Radio, CreditCard, Leaf } from "lucide-react";
 
 import type { Itinerary, StopBase, TripPlanResponse, TransitIncident, TransitQRPass } from "./types";
 import { api } from "./services/api";
@@ -50,13 +51,16 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Phase 8, 11, 12 & 13 Modals
+  // Phase 8, 11, 12, 13 & 14 Modals
   const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
   const [crowdModalRoute, setCrowdModalRoute] = useState<{ id: string; name: string } | null>(null);
   const [alertModalItin, setAlertModalItin] = useState<Itinerary | null>(null);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isLiveNavModalOpen, setIsLiveNavModalOpen] = useState(false);
+  const [isEcoModalOpen, setIsEcoModalOpen] = useState(false);
+  const [ecoModalItin, setEcoModalItin] = useState<Itinerary | null>(null);
+  const [ecoCarbonSaved, setEcoCarbonSaved] = useState<number>(28.4);
   const [navItinerary, setNavItinerary] = useState<Itinerary | null>(null);
   const [activeWalletPass, setActiveWalletPass] = useState<TransitQRPass | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(250);
@@ -88,7 +92,12 @@ export const App: React.FC = () => {
     // 5. Fetch Singara Chennai wallet balance
     api.getWalletCard().then((c) => setWalletBalance(c.balance)).catch(() => {});
 
-    // 6. Trigger initial journey search
+    // 6. Fetch Eco Profile
+    api.getEcoProfile().then((p) => {
+      if (p?.lifetime_co2_saved_kg) setEcoCarbonSaved(p.lifetime_co2_saved_kg);
+    }).catch(() => {});
+
+    // 7. Trigger initial journey search
     handlePlanJourney({
       origin: { lat: 13.0827, lon: 80.2754, name: "Chennai Central" },
       destination: { lat: 12.9780, lon: 80.1640, name: "Chennai Airport" },
@@ -230,6 +239,31 @@ export const App: React.FC = () => {
             >
               <CreditCard size={13} color="#22D3EE" />
               <span>₹{walletBalance.toFixed(0)}</span>
+            </button>
+            <button
+              type="button"
+              className="btn-ops"
+              onClick={() => {
+                setEcoModalItin(itineraries[selectedItinIndex] || null);
+                setIsEcoModalOpen(true);
+              }}
+              title={t("eco.title", "Eco-Transit & Commute Pass Optimizer")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backgroundColor: "rgba(16, 185, 129, 0.15)",
+                border: "1px solid rgba(16, 185, 129, 0.35)",
+                borderRadius: "6px",
+                padding: "6px 9px",
+                color: "#34D399",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              <Leaf size={13} color="#10B981" />
+              <span>🌱 {ecoCarbonSaved}kg</span>
             </button>
             <button
               type="button"
@@ -447,6 +481,10 @@ export const App: React.FC = () => {
                         setIsLiveNavModalOpen(true);
                       }}
                       onGenerateTicket={(it) => handleGenerateTicket(it)}
+                      onOpenEco={(it) => {
+                        setEcoModalItin(it);
+                        setIsEcoModalOpen(true);
+                      }}
                     />
                   ))
                 )}
@@ -584,6 +622,13 @@ export const App: React.FC = () => {
           setIsLiveNavModalOpen(false);
           setIsWalletModalOpen(true);
         }}
+      />
+
+      {/* Phase 14: Eco-Transit Green Commuter Engine & Monthly Pass Optimizer */}
+      <EcoTransitModal
+        isOpen={isEcoModalOpen}
+        onClose={() => setIsEcoModalOpen(false)}
+        selectedItinerary={ecoModalItin}
       />
     </div>
   );

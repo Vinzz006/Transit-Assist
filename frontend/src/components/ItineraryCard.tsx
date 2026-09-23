@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck, Bell, Star, Accessibility, Navigation, QrCode } from "lucide-react";
+import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck, Bell, Star, Accessibility, Navigation, QrCode, Leaf } from "lucide-react";
 import type { Itinerary, TransitLeg } from "../types";
 
 interface ItineraryCardProps {
@@ -15,6 +15,7 @@ interface ItineraryCardProps {
   onToggleBookmark?: () => void;
   onStartTrip?: (itinerary: Itinerary) => void;
   onGenerateTicket?: (itinerary: Itinerary) => void;
+  onOpenEco?: (itinerary: Itinerary) => void;
 }
 
 export const ItineraryCard: React.FC<ItineraryCardProps> = ({
@@ -29,6 +30,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
   onToggleBookmark,
   onStartTrip,
   onGenerateTicket,
+  onOpenEco,
 }) => {
   const { t, i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -132,8 +134,36 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
             </div>
           )}
         </div>
-        <div className={`fare-pill ${isFree ? "free" : ""}`}>
-          {displayFare}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+          <div className={`fare-pill ${isFree ? "free" : ""}`}>
+            {displayFare}
+          </div>
+          {onOpenEco && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenEco(itinerary);
+              }}
+              style={{
+                background: "rgba(16, 185, 129, 0.15)",
+                border: "1px solid rgba(16, 185, 129, 0.35)",
+                color: "#34D399",
+                borderRadius: "12px",
+                padding: "2px 7px",
+                fontSize: "10px",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "3px",
+              }}
+              title="View Trip Carbon & Fuel Savings"
+            >
+              <Leaf size={10} />
+              <span>🌱 Eco Savings</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -375,6 +405,24 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
                 }}
               >
                 <QrCode size={13} /> {t("wallet.qr_ticket_btn", "QR Ticket")}
+              </button>
+            )}
+            {onOpenEco && (
+              <button
+                type="button"
+                className="btn-card-action"
+                style={{
+                  color: "#34D399",
+                  backgroundColor: "rgba(16, 185, 129, 0.12)",
+                  border: "1px solid rgba(16, 185, 129, 0.3)",
+                  fontWeight: 600,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenEco(itinerary);
+                }}
+              >
+                <Leaf size={13} /> {t("eco.tab_comparison", "Eco Savings")}
               </button>
             )}
             {onSetAlert && (
