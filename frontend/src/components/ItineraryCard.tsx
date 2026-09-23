@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck, Bell, Star, Accessibility } from "lucide-react";
+import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck, Bell, Star, Accessibility, Navigation, QrCode } from "lucide-react";
 import type { Itinerary, TransitLeg } from "../types";
 
 interface ItineraryCardProps {
@@ -13,6 +13,8 @@ interface ItineraryCardProps {
   onSetAlert?: () => void;
   isBookmarked?: boolean;
   onToggleBookmark?: () => void;
+  onStartTrip?: (itinerary: Itinerary) => void;
+  onGenerateTicket?: (itinerary: Itinerary) => void;
 }
 
 export const ItineraryCard: React.FC<ItineraryCardProps> = ({
@@ -25,6 +27,8 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
   onSetAlert,
   isBookmarked = false,
   onToggleBookmark,
+  onStartTrip,
+  onGenerateTicket,
 }) => {
   const { t, i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -336,7 +340,43 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
           ))}
 
           {/* Action Row */}
-          <div className="itinerary-action-bar">
+          <div className="itinerary-action-bar" style={{ flexWrap: "wrap", gap: "6px" }}>
+            {onStartTrip && (
+              <button
+                type="button"
+                className="btn-card-action"
+                style={{
+                  color: "#FFFFFF",
+                  backgroundColor: "rgba(6, 182, 212, 0.2)",
+                  border: "1px solid rgba(6, 182, 212, 0.5)",
+                  fontWeight: 700,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStartTrip(itinerary);
+                }}
+              >
+                <Navigation size={13} color="#67E8F9" /> {t("nav.start_trip", "Start Trip")}
+              </button>
+            )}
+            {onGenerateTicket && (
+              <button
+                type="button"
+                className="btn-card-action"
+                style={{
+                  color: "#34D399",
+                  backgroundColor: "rgba(16, 185, 129, 0.15)",
+                  border: "1px solid rgba(16, 185, 129, 0.35)",
+                  fontWeight: 700,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onGenerateTicket(itinerary);
+                }}
+              >
+                <QrCode size={13} /> {t("wallet.qr_ticket_btn", "QR Ticket")}
+              </button>
+            )}
             {onSetAlert && (
               <button
                 type="button"

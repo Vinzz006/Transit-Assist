@@ -114,6 +114,8 @@ export interface Itinerary {
   monsoon_warning?: string;
   is_wheelchair_accessible?: boolean;
   accessibility_notes?: string;
+  origin_name?: string;
+  destination_name?: string;
 }
 
 export interface TripPlanRequest {
@@ -299,5 +301,59 @@ export interface IncidentCreateRequest {
   mode: "ALL" | "METRO" | "SUBURBAN_RAIL" | "BUS";
   severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   affected_corridor?: string;
+}
+
+export interface WalletCard {
+  card_id: string;
+  card_number: string;
+  masked_number: string;
+  card_type: string;
+  cardholder_name: string;
+  balance: number;
+  currency: string;
+  expiry_date: string;
+  is_active: boolean;
+}
+
+export interface TopupRequest {
+  amount: number;
+  payment_method?: string;
+  upi_id?: string;
+}
+
+export interface TicketRequest {
+  itinerary_id?: string;
+  origin_name: string;
+  destination_name: string;
+  route_short_name: string;
+  mode: string;
+  fare_amount: number;
+  is_female_concession: boolean;
+}
+
+export interface TransitQRPass {
+  ticket_id: string;
+  qr_data_token: string;
+  origin_name: string;
+  destination_name: string;
+  route_short_name: string;
+  mode: string;
+  fare_amount: number;
+  is_female_concession: boolean;
+  issued_at: string;
+  valid_until: string;
+  validity_minutes: number;
+  status: "ACTIVE" | "USED" | "EXPIRED";
+}
+
+export interface WalletTransaction {
+  id: string;
+  type: "TOPUP" | "FARE_PAYMENT" | "FREE_PASS";
+  amount: number;
+  description: string;
+  mode?: string;
+  route_short_name?: string;
+  timestamp: string;
+  balance_after: number;
 }
 

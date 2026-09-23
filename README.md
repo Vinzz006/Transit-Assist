@@ -253,15 +253,17 @@ Transit Assist India has been verified across responsive viewports down to 375px
 - [x] **Step-Free Accessibility & Wheelchair Routing**: Station elevator directories and wheelchair accessible route filtering.
 - [x] **Live Departure Alarms**: In-browser audio countdown chimes and departure alerts before upcoming transit connections.
 - [x] **Admin Transit Operations Center & Live Disruption Broadcasting**: Network telemetry console, multi-mode fleet trackers, OTP punctuality gauges, and real-time incident broadcaster alerting commuter PWAs.
+- [x] **Turn-by-Turn Transit Navigation & Singara Chennai NCMC Wallet**: Bilingual Web Speech API stop announcements, "Wake Me Up at My Stop" proximity alarms, virtual RuPay smartcard with simulated UPI top-ups, and paperless QR boarding passes.
 
 ---
 
-## 🧪 Comprehensive Automated Test Suite (61 Tests)
+## 🧪 Comprehensive Automated Test Suite (67 Tests)
 
 ```bash
 pytest backend/tests/
-# ======================== 61 passed, 1 warning in 3.27s ========================
+# ======================== 67 passed, 1 warning in 7.41s ========================
 ```
+- `test_wallet.py` (Phase 13): Singara Chennai NCMC smartcard balance, UPI top-ups, QR ticketing, and fare deductions.
 - `test_accessibility_and_saved.py` (Phase 11): Step-free stations directory, wheelchair routing, saved hubs.
 - `test_admin_dashboard.py` (Phase 12): Operations metrics, fleet telemetry, incident broadcasting & resolution.
 - `test_ml_predictor.py` (Phase 10): Delay prediction & monsoon corridor intelligence.

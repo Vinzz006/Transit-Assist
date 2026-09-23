@@ -5,7 +5,9 @@
     "plan": "Plan Trip",
     "nearby": "Nearby Stops",
     "routes": "Routes & Metro",
-    "saved": "Saved"
+    "saved": "Saved",
+    "start_trip": "Start Trip",
+    "live_title": "Live Turn-by-Turn Transit HUD"
   },
   "search": {
     "origin_placeholder": "Enter origin stop or landmark...",
@@ -212,5 +214,16 @@
     "broadcast_title": "Broadcast New Transit Advisory or Disruption",
     "broadcast_success": "Disruption alert broadcast to all active commuter apps successfully!",
     "view": "View"
+  },
+  "wallet": {
+    "title": "Singara Chennai Transit Wallet",
+    "subtitle": "National Common Mobility Card (NCMC) & QR Pass",
+    "tab_card": "Smartcard & Top-Up",
+    "tab_qr": "QR Boarding Pass",
+    "tab_history": "Pass Ledger",
+    "quick_topup": "Instant UPI Recharge",
+    "qr_ticket_btn": "QR Ticket",
+    "stored_balance": "Stored Balance",
+    "savings_notice": "20% Instant Savings across CMRL Metro & MTC Buses"
   }
 }

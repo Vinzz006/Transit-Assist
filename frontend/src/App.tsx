@@ -14,9 +14,11 @@ import { CrowdReportModal } from "./components/CrowdReportModal";
 import { SavedPlaces } from "./components/SavedPlaces";
 import { DepartureAlertModal } from "./components/DepartureAlertModal";
 import { AdminDashboardModal } from "./components/AdminDashboardModal";
-import { ShieldAlert, Bookmark, Radio } from "lucide-react";
+import { TransitWalletModal } from "./components/TransitWalletModal";
+import { LiveNavigationModal } from "./components/LiveNavigationModal";
+import { ShieldAlert, Bookmark, Radio, CreditCard } from "lucide-react";
 
-import type { Itinerary, StopBase, TripPlanResponse, TransitIncident } from "./types";
+import type { Itinerary, StopBase, TripPlanResponse, TransitIncident, TransitQRPass } from "./types";
 import { api } from "./services/api";
 import { cache } from "./services/cache";
 
@@ -48,11 +50,16 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Phase 8, 11 & 12 Modals
+  // Phase 8, 11, 12 & 13 Modals
   const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
   const [crowdModalRoute, setCrowdModalRoute] = useState<{ id: string; name: string } | null>(null);
   const [alertModalItin, setAlertModalItin] = useState<Itinerary | null>(null);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [isLiveNavModalOpen, setIsLiveNavModalOpen] = useState(false);
+  const [navItinerary, setNavItinerary] = useState<Itinerary | null>(null);
+  const [activeWalletPass, setActiveWalletPass] = useState<TransitQRPass | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number>(250);
   const [activeIncidents, setActiveIncidents] = useState<TransitIncident[]>([]);
   const [dismissedAlerts, setDismissedAlerts] = useState<string[]>([]);
 
@@ -78,7 +85,10 @@ export const App: React.FC = () => {
     // 4. Load bookmarked itineraries
     setBookmarkedIds(cache.getBookmarkedItineraries().map((it) => it.itinerary_id));
 
-    // 5. Trigger initial journey search
+    // 5. Fetch Singara Chennai wallet balance
+    api.getWalletCard().then((c) => setWalletBalance(c.balance)).catch(() => {});
+
+    // 6. Trigger initial journey search
     handlePlanJourney({
       origin: { lat: 13.0827, lon: 80.2754, name: "Chennai Central" },
       destination: { lat: 12.9780, lon: 80.1640, name: "Chennai Airport" },
@@ -136,6 +146,28 @@ export const App: React.FC = () => {
       });
   };
 
+  const handleGenerateTicket = async (it: Itinerary) => {
+    try {
+      const firstTransit = it.legs.find((l) => l.leg_type === "TRANSIT") || it.legs[0];
+      const fare = isFemalePref && it.fare.women_fare_total === 0 ? 0 : (it.fare.smartcard_total || it.fare.cash_total);
+      const pass = await api.generateTransitTicket({
+        itinerary_id: it.itinerary_id,
+        origin_name: it.origin_name || origin.name,
+        destination_name: it.destination_name || destination.name,
+        route_short_name: firstTransit?.route_short_name || "Line",
+        mode: firstTransit?.mode || "METRO",
+        fare_amount: fare,
+        is_female_concession: isFemalePref && it.fare.women_fare_total === 0,
+      });
+      setActiveWalletPass(pass);
+      setIsWalletModalOpen(true);
+      const card = await api.getWalletCard();
+      setWalletBalance(card.balance);
+    } catch (err: any) {
+      alert("Could not generate ticket: " + (err.message || "Insufficient balance. Please top up your wallet."));
+    }
+  };
+
   const selectedItinerary = itineraries[selectedItinIndex] || null;
 
   return (
@@ -176,6 +208,28 @@ export const App: React.FC = () => {
             >
               <Radio size={13} />
               <span>Ops</span>
+            </button>
+            <button
+              type="button"
+              className="btn-ops"
+              onClick={() => setIsWalletModalOpen(true)}
+              title={t("wallet.title", "Singara Chennai Transit Wallet")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backgroundColor: "rgba(6, 182, 212, 0.15)",
+                border: "1px solid rgba(6, 182, 212, 0.35)",
+                borderRadius: "6px",
+                padding: "6px 9px",
+                color: "#67E8F9",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              <CreditCard size={13} color="#22D3EE" />
+              <span>₹{walletBalance.toFixed(0)}</span>
             </button>
             <button
               type="button"
@@ -388,6 +442,11 @@ export const App: React.FC = () => {
                         cache.toggleBookmarkItinerary(itin);
                         setBookmarkedIds(cache.getBookmarkedItineraries().map((b) => b.itinerary_id));
                       }}
+                      onStartTrip={(it) => {
+                        setNavItinerary(it);
+                        setIsLiveNavModalOpen(true);
+                      }}
+                      onGenerateTicket={(it) => handleGenerateTicket(it)}
                     />
                   ))
                 )}
@@ -503,6 +562,28 @@ export const App: React.FC = () => {
         isOpen={isAdminModalOpen}
         onClose={() => setIsAdminModalOpen(false)}
         onIncidentsUpdated={(updated) => setActiveIncidents(updated)}
+      />
+
+      {/* Phase 13: Singara Chennai / NCMC Digital Transit Wallet & QR Ticketing */}
+      <TransitWalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        activePass={activeWalletPass}
+        onBalanceUpdated={(bal) => setWalletBalance(bal)}
+      />
+
+      {/* Phase 13: Live Turn-by-Turn Transit Navigation & Stop Proximity Alarm HUD */}
+      <LiveNavigationModal
+        isOpen={isLiveNavModalOpen}
+        onClose={() => setIsLiveNavModalOpen(false)}
+        itinerary={navItinerary}
+        onTripCompleted={(fare) => {
+          setWalletBalance((prev) => Math.max(0, prev - fare));
+        }}
+        onOpenWallet={() => {
+          setIsLiveNavModalOpen(false);
+          setIsWalletModalOpen(true);
+        }}
       />
     </div>
   );

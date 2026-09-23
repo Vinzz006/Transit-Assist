@@ -16,6 +16,11 @@ import type {
   AdminMetrics,
   TransitIncident,
   IncidentCreateRequest,
+  WalletCard,
+  TopupRequest,
+  TicketRequest,
+  TransitQRPass,
+  WalletTransaction,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -158,6 +163,40 @@ export const api = {
 
   getAdminReports: (limit: number = 20): Promise<ReportItem[]> => {
     return fetchJson<ReportItem[]>(`${API_BASE_URL}/api/admin/reports?limit=${limit}`);
+  },
+
+  // Phase 13: Singara Chennai / NCMC Digital Transit Wallet
+  getWalletCard: (): Promise<WalletCard> => {
+    return fetchJson<WalletCard>(`${API_BASE_URL}/api/wallet/card`);
+  },
+
+  topupWallet: (req: TopupRequest): Promise<WalletCard> => {
+    return fetchJson<WalletCard>(`${API_BASE_URL}/api/wallet/topup`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  },
+
+  generateTransitTicket: (req: TicketRequest): Promise<TransitQRPass> => {
+    return fetchJson<TransitQRPass>(`${API_BASE_URL}/api/wallet/ticket`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  },
+
+  deductFare: (amount: number, description: string, mode: string = "TRANSIT", route_short_name?: string): Promise<WalletCard> => {
+    return fetchJson<WalletCard>(`${API_BASE_URL}/api/wallet/deduct`, {
+      method: "POST",
+      body: JSON.stringify({ amount, description, mode, route_short_name }),
+    });
+  },
+
+  getWalletTransactions: (limit: number = 20): Promise<WalletTransaction[]> => {
+    return fetchJson<WalletTransaction[]>(`${API_BASE_URL}/api/wallet/transactions?limit=${limit}`);
+  },
+
+  getActiveTickets: (): Promise<TransitQRPass[]> => {
+    return fetchJson<TransitQRPass[]>(`${API_BASE_URL}/api/wallet/tickets/active`);
   },
 };
 

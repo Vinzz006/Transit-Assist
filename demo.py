@@ -231,9 +231,46 @@ def main():
         print(f"  Error querying admin operations: {e}")
     print()
 
+    # 10. Singara Chennai NCMC Transit Wallet & QR Boarding Pass
+    print("[10/10] Testing Singara Chennai NCMC Digital Transit Wallet & QR Pass Ticketing...")
+    try:
+        card = get(f"{BASE_URL}/api/wallet/card")
+        print(f"  Virtual Transit Smartcard:   {card.get('card_type')} [{card.get('masked_number')}]")
+        print(f"  Initial Stored Balance:      ₹{card.get('balance'):.2f}")
+
+        # Top-up ₹100 via UPI
+        topup_res = post(f"{BASE_URL}/api/wallet/topup", {
+            "amount": 100.0,
+            "payment_method": "UPI_GPAY",
+            "upi_id": "commuter@oksbi"
+        })
+        print(f"  Recharged via UPI (+₹100):   New Balance ₹{topup_res.get('balance'):.2f}")
+
+        # Issue digital QR ticket for Central -> Airport
+        ticket = post(f"{BASE_URL}/api/wallet/ticket", {
+            "origin_name": "Chennai Central",
+            "destination_name": "Chennai Airport",
+            "route_short_name": "Blue Line",
+            "mode": "METRO",
+            "fare_amount": 32.0,
+            "is_female_concession": False
+        })
+        print(f"  Generated Digital QR Pass:   Ticket ID {ticket.get('ticket_id')} [Valid for {ticket.get('validity_minutes')} mins]")
+        print(f"  QR AFC Token:                {ticket.get('qr_data_token')[:38]}...")
+        print(f"  Fare Deducted (20% discount): ₹{ticket.get('fare_amount')}")
+
+        txns = get(f"{BASE_URL}/api/wallet/transactions?limit=3")
+        print(f"  Recent Wallet Ledger Items:  {len(txns)} transaction(s) recorded")
+        for tx in txns:
+            sign = "+" if tx.get('type') == 'TOPUP' else "-"
+            print(f"   • [{tx.get('timestamp')}] {tx.get('description')} ({sign}₹{tx.get('amount')}) -> Bal: ₹{tx.get('balance_after')}")
+    except Exception as e:
+        print(f"  Error querying digital wallet: {e}")
+    print()
+
     print("=" * 68)
     print("  Demo Complete!")
-    print("  Web App URL:       http://localhost:5174  (or http://localhost:3000 in Docker)")
+    print("  Web App URL:       http://localhost:5173  (or http://localhost:3000 in Docker)")
     print("  FastAPI Docs:      http://localhost:8000/docs")
     print("=" * 68)
 
