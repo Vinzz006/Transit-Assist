@@ -71,7 +71,11 @@ def get_corridors_summary(
     """
     predictor = get_delay_predictor()
     corridors = predictor.get_corridors_summary(weather=weather or "clear")
-    items = [CorridorRiskItem(**c) for c in corridors]
+    items = []
+    for c in corridors:
+        c_dict = dict(c)
+        c_dict["corridor_name"] = c_dict.get("name_en")
+        items.append(CorridorRiskItem(**c_dict))
     return CorridorSummaryResponse(
         weather=weather or "clear",
         active_corridors_count=len(items),

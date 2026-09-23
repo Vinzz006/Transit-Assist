@@ -21,7 +21,7 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "http://127.0.0.1:8000"
 
 def get(url):
     req = urllib.request.Request(url, headers={"User-Agent": "TransitAssistDemo/1.0"})

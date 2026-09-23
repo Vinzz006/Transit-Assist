@@ -29,6 +29,7 @@ class CorridorRiskItem(BaseModel):
     corridor_id: str
     name_en: str
     name_ta: str
+    corridor_name: Optional[str] = None
     routes: List[str]
     waterlogging_risk: str  # "NONE", "MODERATE", "SEVERE"
     typical_peak_delay_min: int

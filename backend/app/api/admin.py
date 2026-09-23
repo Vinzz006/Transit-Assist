@@ -40,19 +40,29 @@ class TransitIncident(BaseModel):
     route_short_name: Optional[str] = "Network"
     title_en: str
     title_ta: str
-    severity: str  # "INFO", "WARNING", "CRITICAL"
+    title: Optional[str] = None
+    severity: str  # "INFO", "WARNING", "CRITICAL", "LOW", "MEDIUM", "HIGH"
+    mode: Optional[str] = "ALL"
     description_en: str
     description_ta: str
+    description: Optional[str] = None
+    affected_corridor: Optional[str] = None
     created_at: str
+    reported_at: Optional[str] = None
+    resolved_at: Optional[str] = None
     is_active: bool = True
 
 class IncidentCreateRequest(BaseModel):
     route_id: Optional[str] = None
-    title_en: str
+    title_en: Optional[str] = None
+    title: Optional[str] = None
     title_ta: Optional[str] = None
     severity: str = "WARNING"
-    description_en: str
+    mode: Optional[str] = "ALL"
+    description_en: Optional[str] = None
+    description: Optional[str] = None
     description_ta: Optional[str] = None
+    affected_corridor: Optional[str] = None
 
 # In-memory storage for active incidents & broadcasts
 ACTIVE_INCIDENTS: List[TransitIncident] = [
@@ -62,10 +72,15 @@ ACTIVE_INCIDENTS: List[TransitIncident] = [
         route_short_name="EMU South",
         title_en="Scheduled Track Maintenance between Central & Park",
         title_ta="சென்ட்ரல் - பார்க் இடையே பராமரிப்பு பணி",
+        title="Scheduled Track Maintenance between Central & Park",
         severity="INFO",
+        mode="SUBURBAN_RAIL",
         description_en="Off-peak maintenance ongoing on Suburban platform 3. Trains operating via fast corridor with +4 min headway.",
         description_ta="புறநகர் 3வது நடைமேடையில் பராமரிப்பு பணி நடக்கிறது. புறநகர் ரயில்கள் விரைவு வழித்தடத்தில் இயக்கப்படுகின்றன.",
+        description="Off-peak maintenance ongoing on Suburban platform 3. Trains operating via fast corridor with +4 min headway.",
+        affected_corridor="Central - Tambaram Corridor",
         created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        reported_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         is_active=True,
     )
 ]
@@ -129,8 +144,10 @@ def broadcast_incident(
         raise HTTPException(status_code=403, detail="Invalid admin credentials.")
 
     inc_id = f"INC_{int(datetime.now().timestamp())}"
-    title_ta = req.title_ta or req.title_en
-    desc_ta = req.description_ta or req.description_en
+    title_en = req.title_en or req.title or "Transit Advisory"
+    title_ta = req.title_ta or title_en
+    desc_en = req.description_en or req.description or ""
+    desc_ta = req.description_ta or desc_en
 
     route_name = req.route_id or "Network"
     if req.route_id:
@@ -143,16 +160,23 @@ def broadcast_incident(
         elif "MTC" in req.route_id:
             route_name = req.route_id.replace("MTC_", "Bus ")
 
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     new_incident = TransitIncident(
         id=inc_id,
         route_id=req.route_id,
         route_short_name=route_name,
-        title_en=req.title_en,
+        title_en=title_en,
         title_ta=title_ta,
+        title=title_en,
         severity=req.severity.upper(),
-        description_en=req.description_en,
+        mode=req.mode or "ALL",
+        description_en=desc_en,
         description_ta=desc_ta,
-        created_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        description=desc_en,
+        affected_corridor=req.affected_corridor,
+        created_at=now_str,
+        reported_at=now_str,
         is_active=True,
     )
 
