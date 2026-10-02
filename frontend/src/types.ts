@@ -434,4 +434,129 @@ export interface GreenCommuterProfile {
   cleaner_air_points: number;
 }
 
+// Phase 15: Station Interchange Wayfinding Guide & First/Last-Mile Feeder Networks
+export interface PlatformInfo {
+  platform_id: string;
+  platform_number: string;
+  mode: "METRO" | "SUBURBAN_RAIL" | "MAINLINE_TRAIN" | "BUS" | string;
+  level: string;
+  service_direction: string;
+  service_direction_ta: string;
+  accessible: boolean;
+  has_lift: boolean;
+  has_escalator: boolean;
+}
+
+export interface ExitGateInfo {
+  gate_id: string;
+  gate_code: string;
+  name_en: string;
+  name_ta: string;
+  leading_to: string[];
+  leading_to_ta: string[];
+  has_wheelchair_ramp: boolean;
+  nearby_feeder_stand?: string;
+}
+
+export interface AmenityInfo {
+  category: "LIFT" | "ESCALATOR" | "RESTROOM" | "WATER" | "CLOAKROOM" | "WHEELCHAIR" | "ATM" | "TICKETING" | string;
+  name_en: string;
+  name_ta: string;
+  location_description: string;
+  location_description_ta: string;
+  is_operational: boolean;
+}
+
+export interface FeederServiceInfo {
+  service_id: string;
+  service_type: "MTC_SMALL_BUS" | "SHARE_AUTO" | "METRO_FEEDER_SHUTTLE" | string;
+  route_number: string;
+  destination_en: string;
+  destination_ta: string;
+  via_en: string;
+  via_ta: string;
+  frequency_minutes: number;
+  fare_inr: number;
+  operating_hours: string;
+  boarding_gate_code: string;
+  vehicle_capacity: string;
+}
+
+export interface InterchangeHubSummary {
+  hub_id: string;
+  name_en: string;
+  name_ta: string;
+  modes: string[];
+  lat: number;
+  lon: number;
+  total_platforms: number;
+  total_exits: number;
+  has_share_auto_stand: boolean;
+  has_small_bus_feeder: boolean;
+  is_step_free: boolean;
+}
+
+export interface InterchangeHubDetail {
+  hub_id: string;
+  name_en: string;
+  name_ta: string;
+  subtitle_en: string;
+  subtitle_ta: string;
+  lat: number;
+  lon: number;
+  modes: string[];
+  levels: string[];
+  platforms: PlatformInfo[];
+  exit_gates: ExitGateInfo[];
+  amenities: AmenityInfo[];
+  feeders: FeederServiceInfo[];
+  connects_to_stop_ids: string[];
+}
+
+export interface TransferStep {
+  step_number: number;
+  instruction_en: string;
+  instruction_ta: string;
+  distance_meters: number;
+  duration_seconds: number;
+  level_change?: string;
+  is_step_free: boolean;
+  signage_clue: string;
+}
+
+export interface TransferGuideRequest {
+  hub_id: string;
+  origin_platform_id: string;
+  destination_platform_id: string;
+  wheelchair_only?: boolean;
+}
+
+export interface TransferGuideResponse {
+  hub_id: string;
+  origin_platform_name: string;
+  destination_platform_name: string;
+  total_walking_distance_meters: number;
+  estimated_walk_duration_minutes: number;
+  is_fully_step_free: boolean;
+  has_elevator_option: boolean;
+  steps: TransferStep[];
+  tips_en: string[];
+  tips_ta: string[];
+}
+
+export interface FeederRecommendationRequest {
+  hub_id: string;
+  destination_query: string;
+  max_fare?: number;
+}
+
+export interface FeederRecommendationResponse {
+  hub_id: string;
+  destination_matched: string;
+  recommended_feeders: FeederServiceInfo[];
+  fastest_option?: FeederServiceInfo;
+  cheapest_option?: FeederServiceInfo;
+}
+
+
 

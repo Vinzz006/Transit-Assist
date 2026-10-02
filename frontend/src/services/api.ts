@@ -25,6 +25,13 @@ import type {
   CommuteOptimizerRequest,
   CommuteOptimizerResponse,
   GreenCommuterProfile,
+  InterchangeHubSummary,
+  InterchangeHubDetail,
+  TransferGuideRequest,
+  TransferGuideResponse,
+  FeederServiceInfo,
+  FeederRecommendationRequest,
+  FeederRecommendationResponse,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -224,6 +231,34 @@ export const api = {
 
   getEcoProfile: (): Promise<GreenCommuterProfile> => {
     return fetchJson<GreenCommuterProfile>(`${API_BASE_URL}/api/eco/profile`);
+  },
+
+  // Phase 15: Station Interchange Wayfinding Guide & First/Last-Mile Feeder Networks
+  getInterchangeHubs: (): Promise<InterchangeHubSummary[]> => {
+    return fetchJson<InterchangeHubSummary[]>(`${API_BASE_URL}/api/interchange/hubs`);
+  },
+
+  getInterchangeHubDetail: (hubId: string): Promise<InterchangeHubDetail> => {
+    return fetchJson<InterchangeHubDetail>(`${API_BASE_URL}/api/interchange/hubs/${hubId}`);
+  },
+
+  getTransferGuide: (req: TransferGuideRequest): Promise<TransferGuideResponse> => {
+    return fetchJson<TransferGuideResponse>(`${API_BASE_URL}/api/interchange/transfer-guide`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
+  },
+
+  getStationFeeders: (hubId?: string): Promise<FeederServiceInfo[]> => {
+    const q = hubId ? `?hub_id=${encodeURIComponent(hubId)}` : "";
+    return fetchJson<FeederServiceInfo[]>(`${API_BASE_URL}/api/interchange/feeders${q}`);
+  },
+
+  recommendFeeder: (req: FeederRecommendationRequest): Promise<FeederRecommendationResponse> => {
+    return fetchJson<FeederRecommendationResponse>(`${API_BASE_URL}/api/interchange/feeder-recommend`, {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
   },
 };
 

@@ -17,6 +17,7 @@ import { AdminDashboardModal } from "./components/AdminDashboardModal";
 import { TransitWalletModal } from "./components/TransitWalletModal";
 import { LiveNavigationModal } from "./components/LiveNavigationModal";
 import { EcoTransitModal } from "./components/EcoTransitModal";
+import { InterchangeWayfindingModal } from "./components/InterchangeWayfindingModal";
 import { ShieldAlert, Bookmark, Radio, CreditCard, Leaf } from "lucide-react";
 
 import type { Itinerary, StopBase, TripPlanResponse, TransitIncident, TransitQRPass } from "./types";
@@ -51,7 +52,7 @@ export const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
 
-  // Phase 8, 11, 12, 13 & 14 Modals
+  // Phase 8, 11, 12, 13, 14 & 15 Modals
   const [isSafetyModalOpen, setIsSafetyModalOpen] = useState(false);
   const [crowdModalRoute, setCrowdModalRoute] = useState<{ id: string; name: string } | null>(null);
   const [alertModalItin, setAlertModalItin] = useState<Itinerary | null>(null);
@@ -61,6 +62,8 @@ export const App: React.FC = () => {
   const [isEcoModalOpen, setIsEcoModalOpen] = useState(false);
   const [ecoModalItin, setEcoModalItin] = useState<Itinerary | null>(null);
   const [ecoCarbonSaved, setEcoCarbonSaved] = useState<number>(28.4);
+  const [isInterchangeModalOpen, setIsInterchangeModalOpen] = useState(false);
+  const [selectedInterchangeHubId, setSelectedInterchangeHubId] = useState<string>("HUB_CENTRAL");
   const [navItinerary, setNavItinerary] = useState<Itinerary | null>(null);
   const [activeWalletPass, setActiveWalletPass] = useState<TransitQRPass | null>(null);
   const [walletBalance, setWalletBalance] = useState<number>(250);
@@ -264,6 +267,31 @@ export const App: React.FC = () => {
             >
               <Leaf size={13} color="#10B981" />
               <span>🌱 {ecoCarbonSaved}kg</span>
+            </button>
+            <button
+              type="button"
+              className="btn-eco-trigger"
+              onClick={() => {
+                setSelectedInterchangeHubId("HUB_CENTRAL");
+                setIsInterchangeModalOpen(true);
+              }}
+              title="Phase 15: Station Interchange Wayfinding & First/Last-Mile Feeders"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                backgroundColor: "rgba(14, 165, 233, 0.15)",
+                border: "1px solid rgba(56, 189, 248, 0.35)",
+                borderRadius: "6px",
+                padding: "6px 9px",
+                color: "#38BDF8",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              <Compass size={13} color="#38BDF8" />
+              <span>🧭 Hubs</span>
             </button>
             <button
               type="button"
@@ -485,6 +513,10 @@ export const App: React.FC = () => {
                         setEcoModalItin(it);
                         setIsEcoModalOpen(true);
                       }}
+                      onOpenInterchange={(hubId) => {
+                        if (hubId) setSelectedInterchangeHubId(hubId);
+                        setIsInterchangeModalOpen(true);
+                      }}
                     />
                   ))
                 )}
@@ -629,6 +661,13 @@ export const App: React.FC = () => {
         isOpen={isEcoModalOpen}
         onClose={() => setIsEcoModalOpen(false)}
         selectedItinerary={ecoModalItin}
+      />
+
+      {/* Phase 15: Station Interchange Wayfinding Guide & First/Last-Mile Feeder Hubs */}
+      <InterchangeWayfindingModal
+        isOpen={isInterchangeModalOpen}
+        onClose={() => setIsInterchangeModalOpen(false)}
+        defaultHubId={selectedInterchangeHubId}
       />
     </div>
   );

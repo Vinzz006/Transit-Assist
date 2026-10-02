@@ -254,5 +254,28 @@
     "badge_level": "Commuter Tier",
     "clean_air_pts": "Clean Air Points",
     "benchmark_note": "Calculated using ARAI / BEE emissions benchmarks and Chennai petrol benchmark ₹100.75/L."
+  },
+  "interchange": {
+    "title": "Station Interchanges & Feeder Wayfinding",
+    "subtitle": "Platform directories, step-free transfer routes, MTC Small Buses, and Chennai Share-Autos",
+    "tab_platforms": "Platforms & Levels",
+    "tab_transfer": "Transfer Wayfinding",
+    "tab_feeders": "Small Buses & Share-Autos",
+    "tab_gates": "Gates & Exits",
+    "tab_amenities": "Station Amenities",
+    "select_hub": "Choose Multimodal Station Hub",
+    "origin_platform": "Arriving Platform / Mode",
+    "dest_platform": "Connecting Platform / Mode",
+    "wheelchair_accessible_only": "Step-Free Wheelchair Route Only",
+    "calculate_route": "Generate Transfer Path",
+    "walking_time": "Walk Time",
+    "walking_distance": "Distance",
+    "search_neighbourhood": "Search destination (e.g. Madipakkam, Porur, Mogappair...)",
+    "share_auto_badge": "Share-Auto Stand",
+    "small_bus_badge": "MTC Small Bus",
+    "fixed_fare": "Fixed Fare",
+    "frequency": "Every {{min}} mins",
+    "gate_label": "Boarding Gate",
+    "all_hubs": "Major Transit Hubs"
   }
 }

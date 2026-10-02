@@ -195,6 +195,14 @@ pytest
 | `GET` | `/api/predict/corridors` | Chennai flood-prone corridors & delay summary | `GET /api/predict/corridors?weather=monsoon` |
 | `GET` | `/api/accessibility/stations` | Station elevator counts, ramps, tactile paving | `GET /api/accessibility/stations?mode=METRO` |
 | `GET` | `/api/accessibility/stations/{id}` | Specific station step-free accessibility details | `GET /api/accessibility/stations/ST_CENTRAL` |
+| `POST` | `/api/eco/compare` | Trip carbon and fuel savings comparison vs car/bike | `POST /api/eco/compare` with distance & fare |
+| `POST` | `/api/eco/optimizer` | Chennai monthly commute pass cost optimizer | `POST /api/eco/optimizer` with monthly days & mode |
+| `GET` | `/api/eco/profile` | Green commuter tier badge & clean air points | `GET /api/eco/profile` |
+| `GET` | `/api/interchange/hubs` | Curated multimodal station interchange hubs | `GET /api/interchange/hubs` |
+| `GET` | `/api/interchange/hubs/{id}` | Level directory, platforms, exits & amenities | `GET /api/interchange/hubs/HUB_CENTRAL` |
+| `POST` | `/api/interchange/transfer-guide` | Step-by-step station internal pedestrian transfer path | `POST /api/interchange/transfer-guide` |
+| `GET` | `/api/interchange/feeders` | First/last-mile MTC Small Buses & Chennai Share-Autos | `GET /api/interchange/feeders?hub_id=HUB_GUINDY` |
+| `POST` | `/api/interchange/feeder-recommend` | Optimal feeder minibus or share-auto recommendation | `POST /api/interchange/feeder-recommend` |
 
 ### Sample Journey Plan Request (`POST /api/plan`)
 
@@ -254,15 +262,19 @@ Transit Assist India has been verified across responsive viewports down to 375px
 - [x] **Live Departure Alarms**: In-browser audio countdown chimes and departure alerts before upcoming transit connections.
 - [x] **Admin Transit Operations Center & Live Disruption Broadcasting**: Network telemetry console, multi-mode fleet trackers, OTP punctuality gauges, and real-time incident broadcaster alerting commuter PWAs.
 - [x] **Turn-by-Turn Transit Navigation & Singara Chennai NCMC Wallet**: Bilingual Web Speech API stop announcements, "Wake Me Up at My Stop" proximity alarms, virtual RuPay smartcard with simulated UPI top-ups, and paperless QR boarding passes.
+- [x] **Eco-Transit Carbon Savings Engine & Commute Pass Optimizer**: Comparative carbon emission and fuel savings engine vs cars/two-wheelers, optimal pass selector (CMRL Tourist Card, MTC Day/Monthly Pass, Suburban MST), and Green Commuter badges.
+- [x] **Station Interchange Wayfinding & First/Last-Mile Feeder Networks**: Multi-level platform directories, step-free pedestrian transfer guides with elevator/escalator wayfinding cues, MTC Small Bus (minibus S-series) schedules, and Chennai Share-Auto routes with fixed ₹15-₹25 transparent fare matrices.
 
 ---
 
-## 🧪 Comprehensive Automated Test Suite (67 Tests)
+## 🧪 Comprehensive Automated Test Suite (79 Tests)
 
 ```bash
 pytest backend/tests/
-# ======================== 67 passed, 1 warning in 7.41s ========================
+# ======================== 79 passed, 1 warning in 6.64s ========================
 ```
+- `test_interchange.py` (Phase 15): Multimodal interchange hub dossiers, platform wayfinding, step-free pedestrian routing, MTC Small Bus feeders, and Chennai Share-Auto recommendations.
+- `test_eco.py` (Phase 14): Eco-transit carbon emissions comparison, fuel savings, and commute pass optimization.
 - `test_wallet.py` (Phase 13): Singara Chennai NCMC smartcard balance, UPI top-ups, QR ticketing, and fare deductions.
 - `test_accessibility_and_saved.py` (Phase 11): Step-free stations directory, wheelchair routing, saved hubs.
 - `test_admin_dashboard.py` (Phase 12): Operations metrics, fleet telemetry, incident broadcasting & resolution.
@@ -273,4 +285,5 @@ pytest backend/tests/
 - `test_routing.py`: Earliest arrival, transfer minimizer, Pareto exploration.
 - `test_api.py`: REST endpoint verification, GZip compression, health check.
 - `test_data_cleaning.py`: GTFS ingestion & data normalization.
+
 

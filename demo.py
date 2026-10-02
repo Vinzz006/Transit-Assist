@@ -305,6 +305,37 @@ def main():
         print(f"  Error querying eco-transit engine: {e}")
     print()
 
+    # 12. Station Interchange Wayfinding Guide & First/Last-Mile Feeder Networks
+    print("[12/12] Testing Station Interchange Wayfinding & First/Last-Mile Feeder Networks...")
+    try:
+        hubs = get(f"{BASE_URL}/api/interchange/hubs")
+        print(f"  Curated Multimodal Hubs:     {len(hubs)} interchanges (Central, Guindy, Airport, Tambaram, CMBT)")
+        
+        # Test transfer guide
+        transfer = post(f"{BASE_URL}/api/interchange/transfer-guide", {
+            "hub_id": "HUB_CENTRAL",
+            "origin_platform_id": "CEN_MTR_P1",
+            "destination_platform_id": "CEN_SUB_MMC11",
+            "wheelchair_only": False,
+        })
+        print(f"  Internal Hub Transfer Route: {transfer.get('origin_platform_name')} -> {transfer.get('destination_platform_name')}")
+        print(f"  Transfer Walk Distance:      {transfer.get('total_walking_distance_meters')} meters (~{transfer.get('estimated_walk_duration_minutes')} mins walk)")
+        print(f"  Step-Free Accessible:        {transfer.get('is_fully_step_free')} (Elevator: {transfer.get('has_elevator_option')})")
+        print(f"  First Step Direction:        {transfer.get('steps', [{}])[0].get('instruction_en')}")
+
+        # Test feeder recommendation for Guindy -> Madipakkam
+        feeder_rec = post(f"{BASE_URL}/api/interchange/feeder-recommend", {
+            "hub_id": "HUB_GUINDY",
+            "destination_query": "Madipakkam",
+        })
+        fastest = feeder_rec.get("fastest_option") or {}
+        print(f"  Last-Mile Feeder for Guindy: Optimal Connection to '{feeder_rec.get('destination_matched')}'")
+        print(f"  Recommended Vehicle:         [{fastest.get('route_number')}] {fastest.get('vehicle_capacity')} to {fastest.get('destination_en')}")
+        print(f"  Boarding Gate & Fare:        {fastest.get('boarding_gate_code')} | ₹{fastest.get('fare_inr')} Fixed Fare (Every {fastest.get('frequency_minutes')}m)")
+    except Exception as e:
+        print(f"  Error querying station interchange wayfinding: {e}")
+    print()
+
     print("=" * 68)
     print("  Demo Complete!")
     print("  Web App URL:       http://localhost:5173  (or http://localhost:3000 in Docker)")

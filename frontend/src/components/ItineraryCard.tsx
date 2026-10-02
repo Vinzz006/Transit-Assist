@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck, Bell, Star, Accessibility, Navigation, QrCode, Leaf } from "lucide-react";
+import { Footprints, ChevronDown, ChevronUp, Bus, Train, Car, Share2, Users, Clock, AlertTriangle, ShieldCheck, Bell, Star, Accessibility, Navigation, QrCode, Leaf, Compass } from "lucide-react";
 import type { Itinerary, TransitLeg } from "../types";
 
 interface ItineraryCardProps {
@@ -16,6 +16,7 @@ interface ItineraryCardProps {
   onStartTrip?: (itinerary: Itinerary) => void;
   onGenerateTicket?: (itinerary: Itinerary) => void;
   onOpenEco?: (itinerary: Itinerary) => void;
+  onOpenInterchange?: (hubId?: string) => void;
 }
 
 export const ItineraryCard: React.FC<ItineraryCardProps> = ({
@@ -31,6 +32,7 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
   onStartTrip,
   onGenerateTicket,
   onOpenEco,
+  onOpenInterchange,
 }) => {
   const { t, i18n } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -58,6 +60,19 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
   // Determine display fare
   const fareObj = itinerary.fare;
   let displayFare = `₹${fareObj.cash_total}`;
+
+  // Phase 15: Detect if itinerary touches a multimodal interchange hub
+  const detectedHub = React.useMemo(() => {
+    for (const leg of itinerary.legs) {
+      const text = `${leg.from_stop_name || ""} ${leg.to_stop_name || ""}`.toLowerCase();
+      if (text.includes("central") || text.includes("park") || text.includes("moore")) return "HUB_CENTRAL";
+      if (text.includes("guindy")) return "HUB_GUINDY";
+      if (text.includes("airport") || text.includes("meenambakkam")) return "HUB_AIRPORT";
+      if (text.includes("tambaram")) return "HUB_TAMBARAM";
+      if (text.includes("koyambedu") || text.includes("cmbt")) return "HUB_KOYAMBEDU";
+    }
+    return "HUB_CENTRAL";
+  }, [itinerary]);
   let isFree = false;
 
   if (isFemalePref && fareObj.women_fare_total < fareObj.cash_total) {
@@ -461,6 +476,20 @@ export const ItineraryCard: React.FC<ItineraryCardProps> = ({
                 }}
               >
                 <Share2 size={13} /> {t("safety.shareTripTitle", "Share")}
+              </button>
+            )}
+            {onOpenInterchange && (
+              <button
+                type="button"
+                className="btn-card-action"
+                style={{ color: "#38BDF8" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenInterchange(detectedHub);
+                }}
+                title="Station Interchange Wayfinding & Feeders"
+              >
+                <Compass size={13} /> {t("interchange.tab_transfer", "Transfer Guide")}
               </button>
             )}
             {onReportCrowd && (

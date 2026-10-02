@@ -51,6 +51,9 @@ class AppSettings(BaseModel):
     enable_admin_dashboard: bool = Field(
         default_factory=lambda: _get_bool_env("FEATURE_ADMIN_DASHBOARD", True)
     )
+    enable_station_interchanges: bool = Field(
+        default_factory=lambda: _get_bool_env("FEATURE_STATION_INTERCHANGES", True)
+    )
 
     # Security Keys
     share_token_secret: str = Field(
@@ -73,6 +76,7 @@ class AppSettings(BaseModel):
             "accessibility_modes": self.enable_accessibility_modes,
             "saved_places": self.enable_saved_places,
             "admin_dashboard": self.enable_admin_dashboard,
+            "station_interchanges": self.enable_station_interchanges,
         }
 
 settings = AppSettings()
