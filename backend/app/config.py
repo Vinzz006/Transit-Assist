@@ -54,6 +54,10 @@ class AppSettings(BaseModel):
     enable_station_interchanges: bool = Field(
         default_factory=lambda: _get_bool_env("FEATURE_STATION_INTERCHANGES", True)
     )
+    # Phase 15: Predictive Arrivals & Delay Estimation
+    enable_predictive_arrivals: bool = Field(
+        default_factory=lambda: _get_bool_env("FEATURE_PREDICTIVE_ARRIVALS", True)
+    )
 
     # Security Keys
     share_token_secret: str = Field(
@@ -77,6 +81,7 @@ class AppSettings(BaseModel):
             "saved_places": self.enable_saved_places,
             "admin_dashboard": self.enable_admin_dashboard,
             "station_interchanges": self.enable_station_interchanges,
+            "predictive_arrivals": self.enable_predictive_arrivals,
         }
 
 settings = AppSettings()

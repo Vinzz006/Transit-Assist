@@ -81,3 +81,13 @@ def get_corridors_summary(
         active_corridors_count=len(items),
         corridors=items,
     )
+
+@router.get("/arrivals/evaluation")
+def get_prediction_evaluation():
+    """
+    Public empirical evaluation benchmark for predictive arrival delays.
+    Compares the statistical rolling average delay model against raw timetable schedule
+    on held-out historical ground truth data.
+    """
+    from backend.app.ml.evaluate_predictions import run_evaluation
+    return run_evaluation()

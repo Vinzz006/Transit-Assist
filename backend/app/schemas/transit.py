@@ -44,6 +44,16 @@ class NextArrival(BaseModel):
     departure_seconds: int
     eta_minutes: int
     is_realtime: bool = False
+    # Phase 15: Predictive arrival estimation & confidence
+    scheduled_departure_time: Optional[str] = None
+    scheduled_departure_seconds: Optional[int] = None
+    predicted_departure_time: Optional[str] = None
+    predicted_departure_seconds: Optional[int] = None
+    predicted_delay_minutes: int = 0
+    confidence_level: str = "LOW"  # "HIGH", "MEDIUM", "LOW"
+    confidence_score: float = 0.5
+    data_basis: Optional[str] = None
+    is_predicted: bool = False
 
 class FareBreakdown(BaseModel):
     agency_id: str

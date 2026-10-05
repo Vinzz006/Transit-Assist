@@ -38,6 +38,31 @@ export interface NextArrival {
   departure_seconds: number;
   eta_minutes: number;
   is_realtime: boolean;
+  // Phase 15: Predictive arrivals & confidence
+  scheduled_departure_time?: string;
+  scheduled_departure_seconds?: number;
+  predicted_departure_time?: string;
+  predicted_departure_seconds?: number;
+  predicted_delay_minutes?: number;
+  confidence_level?: "HIGH" | "MEDIUM" | "LOW";
+  confidence_score?: number;
+  data_basis?: string;
+  is_predicted?: boolean;
+}
+
+export interface PredictionEvaluation {
+  status: string;
+  total_test_samples: number;
+  metrics: {
+    schedule_baseline_mae_minutes: number;
+    predictive_model_mae_minutes: number;
+    schedule_baseline_rmse_minutes: number;
+    predictive_model_rmse_minutes: number;
+    mae_improvement_percent: number;
+    hypothesis_verified: boolean;
+  };
+  conclusion: string;
+  samples?: any[];
 }
 
 export interface FareBreakdown {

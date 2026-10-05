@@ -32,6 +32,7 @@ import type {
   FeederServiceInfo,
   FeederRecommendationRequest,
   FeederRecommendationResponse,
+  PredictionEvaluation,
 } from "../types";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "";
@@ -77,13 +78,18 @@ export const api = {
     return fetchJson<StopDetail>(`${API_BASE_URL}/api/stops/${encodeURIComponent(stopId)}`);
   },
 
-  getArrivals: (stopId: string, time?: string, limit: number = 10): Promise<NextArrival[]> => {
+  getArrivals: (stopId: string, time?: string, limit: number = 10, predictive?: boolean): Promise<NextArrival[]> => {
     const params = new URLSearchParams({
       stop_id: stopId,
       limit: limit.toString(),
     });
     if (time) params.append("time", time);
+    if (predictive !== undefined) params.append("predictive", predictive.toString());
     return fetchJson<NextArrival[]>(`${API_BASE_URL}/api/arrivals?${params.toString()}`);
+  },
+
+  getArrivalsEvaluation: (): Promise<PredictionEvaluation> => {
+    return fetchJson<PredictionEvaluation>(`${API_BASE_URL}/api/arrivals/evaluation`);
   },
 
   planTrip: (req: TripPlanRequest): Promise<TripPlanResponse> => {

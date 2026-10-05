@@ -3,12 +3,15 @@ Next arrivals / departures endpoint for any transit stop.
 Returns upcoming scheduled arrivals, line badges, headsign, and ETA in minutes.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from backend.app.config import settings
 from backend.app.db.database import get_db
 from backend.app.db.models import Stop, StopTime, Trip, Route
+from backend.app.ml.predictive_arrivals import get_predictive_arrivals_engine
+from backend.app.ml.evaluate_predictions import run_evaluation
 from backend.app.schemas.transit import NextArrival
 from data.clean_gtfs import parse_time_to_seconds
 
@@ -19,11 +22,13 @@ def get_next_arrivals(
     stop_id: str = Query(..., description="ID of the transit stop"),
     time: Optional[str] = Query(None, description="Current time in HH:MM:SS format"),
     limit: int = Query(10, ge=1, le=50),
+    predictive: Optional[bool] = Query(None, description="Explicit override for predictive arrival estimation"),
     db: Session = Depends(get_db),
 ):
     """
-    Get scheduled upcoming departures for a given stop.
-    Includes route badge colors, line types, headsigns, and ETA minutes.
+    Get upcoming departures for a given stop.
+    When predictive arrivals is enabled (Phase 15), fuses crowdsourced reports,
+    mode priors, and time-of-day traffic distributions to estimate realistic arrival times.
     """
     stop = db.query(Stop).filter(Stop.stop_id == stop_id).first()
     if not stop:
@@ -65,31 +70,90 @@ def get_next_arrivals(
         )
         upcoming.extend(wrap_around)
 
+    # Determine whether predictive arrivals should be applied
+    use_predictions = (
+        predictive if predictive is not None else settings.enable_predictive_arrivals
+    )
+    pred_engine = get_predictive_arrivals_engine() if use_predictions else None
+
     results = []
     for st, tr, rt in upcoming:
         dep_sec = st.departure_seconds
-        # Calculate ETA
+        # Calculate raw schedule ETA
         if dep_sec >= query_sec:
             diff_sec = dep_sec - query_sec
         else:
             diff_sec = (dep_sec + 86400) - query_sec
+        sched_eta_min = int(diff_sec / 60)
 
-        eta_min = int(diff_sec / 60)
-
-        results.append(
-            NextArrival(
-                trip_id=tr.trip_id,
+        if use_predictions and pred_engine:
+            est = pred_engine.estimate_arrival(
                 route_id=rt.route_id,
-                route_short_name=rt.route_short_name,
-                route_long_name=rt.route_long_name,
                 route_type=rt.route_type,
-                route_color=rt.route_color or "0066CC",
-                headsign=tr.trip_headsign or rt.route_long_name,
-                departure_time=st.departure_time,
-                departure_seconds=dep_sec,
-                eta_minutes=eta_min,
-                is_realtime=False,
+                scheduled_departure_time=st.departure_time,
+                scheduled_departure_seconds=dep_sec,
+                query_seconds=query_sec,
+                db=db,
+                stop_id=stop_id,
             )
-        )
+            results.append(
+                NextArrival(
+                    trip_id=tr.trip_id,
+                    route_id=rt.route_id,
+                    route_short_name=rt.route_short_name,
+                    route_long_name=rt.route_long_name,
+                    route_type=rt.route_type,
+                    route_color=rt.route_color or "0066CC",
+                    headsign=tr.trip_headsign or rt.route_long_name,
+                    departure_time=est["predicted_time"],
+                    departure_seconds=est["predicted_seconds"],
+                    eta_minutes=est["predicted_eta_minutes"],
+                    is_realtime=False,
+                    scheduled_departure_time=st.departure_time,
+                    scheduled_departure_seconds=dep_sec,
+                    predicted_departure_time=est["predicted_time"],
+                    predicted_departure_seconds=est["predicted_seconds"],
+                    predicted_delay_minutes=est["predicted_delay_minutes"],
+                    confidence_level=est["confidence_level"],
+                    confidence_score=est["confidence_score"],
+                    data_basis=est["data_basis"],
+                    is_predicted=True,
+                )
+            )
+        else:
+            results.append(
+                NextArrival(
+                    trip_id=tr.trip_id,
+                    route_id=rt.route_id,
+                    route_short_name=rt.route_short_name,
+                    route_long_name=rt.route_long_name,
+                    route_type=rt.route_type,
+                    route_color=rt.route_color or "0066CC",
+                    headsign=tr.trip_headsign or rt.route_long_name,
+                    departure_time=st.departure_time,
+                    departure_seconds=dep_sec,
+                    eta_minutes=sched_eta_min,
+                    is_realtime=False,
+                    scheduled_departure_time=st.departure_time,
+                    scheduled_departure_seconds=dep_sec,
+                    predicted_departure_time=st.departure_time,
+                    predicted_departure_seconds=dep_sec,
+                    predicted_delay_minutes=0,
+                    confidence_level="LOW",
+                    confidence_score=0.0,
+                    data_basis="Raw timetable schedule (prediction disabled)",
+                    is_predicted=False,
+                )
+            )
 
     return results
+
+@router.get("/evaluation", response_model=Dict[str, Any])
+def get_prediction_evaluation():
+    """
+    Public empirical evaluation benchmark for predictive arrival delays.
+    Compares the statistical rolling average delay model against raw timetable schedule
+    on held-out historical ground truth data.
+    """
+    return run_evaluation()
+
